@@ -1,0 +1,49 @@
+/*
+ * Tokens da Val — a identidade visual da seção 5 da Constituição.
+ * Paleta, tipografia e ritmo. Toda cor e fonte do app sai daqui.
+ */
+
+:root {
+  /* Paleta (seção 5) */
+  --verde-petroleo: #1d3a32;
+  --verde-petroleo-2: #24463d; /* variação */
+  --ambar: #c9a24b;
+  --papel: #f6f1e7;
+  --papel-branco: #fbf8f1;
+  --tinta-suave: #4a6258;
+
+  /* Derivadas, sempre dentro da família acima */
+  --tinta: #2c3b35; /* texto sobre papel */
+  --ambar-suave: rgba(201, 162, 75, 0.16);
+  --verde-suave: rgba(29, 58, 50, 0.08);
+  --linha: rgba(74, 98, 88, 0.18); /* divisórias discretas */
+
+  /* Texto sobre cards escuros (verde-petróleo) */
+  --sobre-escuro: #efe7d6;
+  --sobre-escuro-suave: rgba(239, 231, 214, 0.72);
+
+  /* Tipografia (seção 5) */
+  --fonte-assinatura: 'Pacifico', cursive;      /* SÓ a assinatura "Val." */
+  --fonte-titulo: 'Fraunces', Georgia, serif;   /* títulos e itálicos */
+  --fonte-corpo: 'Karla', system-ui, sans-serif; /* corpo e interface */
+
+  /* Corpo nunca abaixo de ~15px (princípio 6) */
+  --corpo: 16px;
+  --corpo-pequeno: 15px;
+  --titulo-sm: 1.35rem;
+  --titulo-md: 1.7rem;
+  --titulo-lg: 2.2rem;
+
+  /* Ritmo / respiro — texto arejado */
+  --linha-altura: 1.65;
+  --espaco-1: 8px;
+  --espaco-2: 16px;
+  --espaco-3: 24px;
+  --espaco-4: 40px;
+  --espaco-5: 64px;
+
+  --raio: 18px;
+  --raio-sm: 12px;
+  --sombra-suave: 0 1px 2px rgba(29, 58, 50, 0.04), 0 8px 24px rgba(29, 58, 50, 0.06);
+  --largura-leitura: 64ch;
+}

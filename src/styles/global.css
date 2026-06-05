@@ -1,0 +1,143 @@
+/*
+ * Base editorial da Val (princípio 6: estética editorial, não promocional).
+ * Calma visual, texto legível e arejado. Fundo de papel com grão e gradientes suaves.
+ */
+
+@import './tokens.css';
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--fonte-corpo);
+  font-size: var(--corpo);
+  line-height: var(--linha-altura);
+  color: var(--tinta);
+  background-color: var(--papel);
+  /* Gradientes suaves de âmbar e verde + grão sutil de papel */
+  background-image:
+    radial-gradient(1200px 600px at 12% -8%, rgba(201, 162, 75, 0.10), transparent 60%),
+    radial-gradient(1000px 700px at 100% 0%, rgba(29, 58, 50, 0.07), transparent 55%);
+  background-attachment: fixed;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--fonte-titulo);
+  font-weight: 500;
+  line-height: 1.2;
+  color: var(--verde-petroleo);
+  margin: 0 0 var(--espaco-2);
+}
+
+h1 { font-size: var(--titulo-lg); }
+h2 { font-size: var(--titulo-md); }
+h3 { font-size: var(--titulo-sm); }
+
+em,
+.italico {
+  font-family: var(--fonte-titulo);
+  font-style: italic;
+}
+
+p {
+  margin: 0 0 var(--espaco-2);
+  max-width: var(--largura-leitura);
+}
+
+a {
+  color: var(--verde-petroleo);
+  text-decoration-color: var(--ambar);
+  text-underline-offset: 3px;
+}
+
+button {
+  font-family: var(--fonte-corpo);
+  font-size: var(--corpo);
+  cursor: pointer;
+}
+
+textarea,
+input {
+  font-family: var(--fonte-corpo);
+  font-size: var(--corpo);
+  color: var(--tinta);
+}
+
+/* A assinatura "Val." — Pacifico, ponto final em âmbar (seção 5) */
+.assinatura {
+  font-family: var(--fonte-assinatura);
+  color: var(--verde-petroleo);
+  font-weight: 400;
+  line-height: 1;
+}
+.assinatura .ponto {
+  color: var(--ambar);
+}
+
+/* Card de papel (claro) */
+.card {
+  background: var(--papel-branco);
+  border: 1px solid var(--linha);
+  border-radius: var(--raio);
+  padding: var(--espaco-3);
+  box-shadow: var(--sombra-suave);
+}
+
+/*
+ * Card escuro (verde-petróleo) — reservado ao que é central/ritual:
+ * Trajetória, ritual dos Elogios, ritual do Autoamor (seção 5).
+ */
+.card-escuro {
+  background: var(--verde-petroleo);
+  background-image: linear-gradient(160deg, var(--verde-petroleo-2), var(--verde-petroleo));
+  color: var(--sobre-escuro);
+  border-radius: var(--raio);
+  padding: var(--espaco-3);
+  box-shadow: var(--sombra-suave);
+}
+.card-escuro h1,
+.card-escuro h2,
+.card-escuro h3 {
+  color: var(--sobre-escuro);
+}
+
+/* Botão sereno, nada promocional */
+.botao {
+  background: var(--verde-petroleo);
+  color: var(--sobre-escuro);
+  border: none;
+  border-radius: 999px;
+  padding: 12px 22px;
+  transition: opacity 0.2s ease;
+}
+.botao:hover { opacity: 0.92; }
+
+.botao-suave {
+  background: transparent;
+  color: var(--verde-petroleo);
+  border: 1px solid var(--linha);
+  border-radius: 999px;
+  padding: 12px 22px;
+}
+
+/* Respeita quem prefere menos movimento */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
+}
