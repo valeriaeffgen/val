@@ -1,5 +1,5 @@
 import Secao from '../components/Secao';
-import { storage } from '../lib/storage';
+import { db } from '../lib/db';
 import { usePerfil } from '../lib/useColecao';
 
 /*
@@ -20,7 +20,8 @@ export default function MeuCentro() {
   function adicionar(chave, valor) {
     const v = valor.trim();
     if (!v) return;
-    storage.salvarPerfil({ [chave]: [...(perfil[chave] ?? []), v] });
+    db.salvarPerfil({ [chave]: [...(perfil[chave] ?? []), v] })
+      .catch((err) => console.warn('Val: falha ao guardar no Meu Centro —', err?.message ?? err));
   }
 
   return (

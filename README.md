@@ -37,14 +37,31 @@ src/
   lib/
     constitution.js     a Constituição como system prompt da camada generativa
     voice.js            guardião do léxico proibido (rede de segurança)
-    storage.js          camada de dados (formas da seção 10; localStorage → Supabase)
-    useColecao.js       hooks finos sobre o storage
+    db.js               fachada de dados async (escolhe Supabase ou localStorage)
+    supabase.js         cliente Supabase + sessão anônima
+    storage.js          adaptador local (localStorage), fallback offline
+    useColecao.js       hooks finos sobre a camada de dados
   styles/
     tokens.css          paleta e tipografia (seção 5)
     global.css          base editorial
   data/
     seed.js             conteúdo-semente (seção 7: semente, não teto)
+supabase/
+  migrations/0001_init.sql   schema (seção 10) + RLS + camada generativa
+  README.md                  como aplicar o schema e configurar o ambiente
 ```
+
+## Dados
+
+A camada de dados (`src/lib/db.js`) é assíncrona e tem dois adaptadores:
+
+- **Com Supabase** (variáveis `VITE_SUPABASE_*` definidas): grava nas tabelas
+  reais, com `user_id` e RLS. Abre uma sessão anônima na chegada — sem muro de
+  cadastro. Ver [`supabase/README.md`](./supabase/README.md).
+- **Sem Supabase:** roda em `localStorage` (fallback offline), para o app
+  funcionar em qualquer ambiente.
+
+As seções não sabem qual backend está embaixo — falam só com `db`.
 
 ## Stack (seção 9)
 

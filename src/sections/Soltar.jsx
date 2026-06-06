@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import Secao from '../components/Secao';
-import { storage } from '../lib/storage';
+import { db } from '../lib/db';
 import { useColecao } from '../lib/useColecao';
 
 /*
@@ -16,7 +16,8 @@ export default function Soltar() {
     e.preventDefault();
     const t = texto.trim();
     if (!t) return;
-    storage.adicionar('soltar', { time: new Date().toTimeString().slice(0, 5), text: t, done: false });
+    db.adicionar('soltar', { time: new Date().toTimeString().slice(0, 5), text: t, done: false })
+      .catch((err) => console.warn('Val: falha ao soltar —', err?.message ?? err));
     setTexto('');
   }
 

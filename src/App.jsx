@@ -1,8 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Nav from './components/Nav';
 import Limiar from './sections/Limiar';
 import { SECOES } from './sections';
-import { storage } from './lib/storage';
+import { db, iniciarSessao } from './lib/db';
 
 /*
  * Casca do app. Fluxo (seção 6):
@@ -15,10 +15,13 @@ export default function App() {
   const [chegada, setChegada] = useState(null); // estado de chegada da visita
   const [secaoId, setSecaoId] = useState(null);
 
+  // Abre a sessão (anônima) cedo, quando há Supabase — sem muro de cadastro.
+  useEffect(() => { iniciarSessao(); }, []);
+
   // Limiar: registra como ela chega e abre uma sessão da Trajetória.
   function aoChegar(estado) {
     setChegada(estado);
-    storage.registrarSessao({ entrada: estado.id });
+    db.registrarSessao({ entrada: estado.id }).catch(() => {});
     setSecaoId('conversar'); // do socorro imediato em diante
   }
 
@@ -42,7 +45,7 @@ export default function App() {
           className="botao-suave"
           onClick={() => {
             // Captura de saída (entrada→saída) alimenta a Trajetória (seção 6).
-            storage.registrarSessao({ entrada: chegada.id, saida: chegada.id });
+            db.registrarSessao({ entrada: chegada.id, saida: chegada.id }).catch(() => {});
             setChegada(null);
             setSecaoId(null);
           }}

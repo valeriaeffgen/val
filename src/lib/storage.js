@@ -1,10 +1,11 @@
 /*
- * Camada de dados da Val.
+ * Adaptador LOCAL da camada de dados da Val (localStorage).
  *
- * Espelha a estrutura do protótipo (seção 10 da Constituição). Hoje vive em
- * localStorage; a interface é desenhada para, no app real, virar tabelas no
- * Supabase com user_id em tudo (seção 9). Mantenha as formas iguais às da
- * seção 10 para a migração ser um troca-de-backend, não um troca-de-modelo.
+ * É o fallback offline: usado por lib/db.js quando o Supabase não está
+ * configurado. Espelha a estrutura do protótipo (seção 10 da Constituição).
+ * As tabelas reais (Supabase) vivem em supabase/migrations e são acessadas
+ * pelo adaptador remoto em lib/db.js — as formas são idênticas, para a
+ * migração ser troca-de-backend, não troca-de-modelo.
  *
  * Formas:
  *   perfil:   { valores[], conquistas[], foco[], elevadores[] }
@@ -43,7 +44,7 @@ function ler() {
 function gravar(estado) {
   localStorage.setItem(CHAVE, JSON.stringify(estado));
   // Avisa a UI que os dados mudaram (sem framework de estado por enquanto).
-  window.dispatchEvent(new CustomEvent('val:storage'));
+  window.dispatchEvent(new CustomEvent('val:data'));
   return estado;
 }
 
