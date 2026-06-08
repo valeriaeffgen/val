@@ -35,3 +35,17 @@ export async function palavraDeHoje() {
   if (data?.erro) throw new Error(data.erro);
   return data?.texto ?? '';
 }
+
+/*
+ * "O espelho" do Olhar pra dentro — devolutiva gerada das respostas dela à
+ * jornada, com cache (regra 2). Ver supabase/functions/espelho.
+ */
+export async function espelhoDaJornada({ jornadaId, titulo, perguntas, respostas }) {
+  if (!hasSupabase) throw new Error('sem-backend');
+  const { data, error } = await supabase.functions.invoke('espelho', {
+    body: { jornadaId, titulo, perguntas, respostas },
+  });
+  if (error) throw error;
+  if (data?.erro) throw new Error(data.erro);
+  return data?.texto ?? '';
+}

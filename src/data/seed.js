@@ -42,4 +42,20 @@ export const JORNADAS = [
       'Quem você é quando ninguém está cobrando nada de você?',
     ],
   },
+  {
+    id: 'um-orgulho-pequeno',
+    titulo: 'Um orgulho pequeno',
+    perguntas: [
+      'Conte um momento recente, pequeno que seja, em que você fez algo de que se orgulha.',
+      'O que esse momento mostra sobre o tipo de pessoa que você é?',
+    ],
+  },
+  {
+    id: 'o-que-eu-carrego',
+    titulo: 'O que eu carrego',
+    perguntas: [
+      'O que você tem carregado que já podia pousar um pouco?',
+      'Se uma amiga querida estivesse carregando isso, o que você diria a ela?',
+    ],
+  },
 ];
