@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Secao from '../components/Secao';
 import { db } from '../lib/db';
 import { hoje } from '../lib/storage';
@@ -27,23 +27,28 @@ export default function Autoamor() {
 // --- (2) A palavra de hoje -----------------------------------------------------
 function PalavraDeHoje() {
   const [palavra, setPalavra] = useState(null);
-  const [estado, setEstado] = useState('carregando'); // carregando | pronta | erro | sem-backend
+  const [estado, setEstado] = useState('inicio'); // inicio | carregando | pronta | erro | sem-backend
   const [plantada, setPlantada] = useState(false);
 
-  useEffect(() => {
-    let vivo = true;
+  async function receber() {
     if (!hasSupabase) { setEstado('sem-backend'); return; }
-    palavraDeHoje()
-      .then((t) => { if (vivo) { setPalavra(t); setEstado('pronta'); } })
-      .catch((e) => { if (vivo) setEstado(e?.message === 'sem-backend' ? 'sem-backend' : 'erro'); });
-    return () => { vivo = false; };
-  }, []);
+    setEstado('carregando');
+    try {
+      const t = await palavraDeHoje();
+      setPalavra(t);
+      setEstado('pronta');
+    } catch (e) {
+      setEstado(e?.message === 'sem-backend' ? 'sem-backend' : 'erro');
+    }
+  }
 
   async function plantar() {
     if (!palavra || plantada) return;
     await db.adicionar('palavras', { text: palavra }).catch(() => {});
     setPlantada(true);
   }
+
+  const corBotao = { color: 'var(--sobre-escuro)', borderColor: 'rgba(239,231,214,0.4)' };
 
   return (
     <div className="card-escuro" style={{ marginBottom: 'var(--espaco-3)' }}>
@@ -52,31 +57,27 @@ function PalavraDeHoje() {
         Uma conversa composta pra você, a partir do que você é, viveu e registrou. Nunca genérica.
       </p>
 
+      {estado === 'inicio' && (
+        <button className="botao-suave" onClick={receber} style={corBotao}>Receber a palavra</button>
+      )}
       {estado === 'carregando' && (
         <p style={{ color: 'var(--sobre-escuro-suave)', margin: 0 }}>A Val está achando a sua…</p>
       )}
-
       {estado === 'pronta' && (
         <>
           <p style={{ fontFamily: 'var(--fonte-titulo)', fontStyle: 'italic', fontSize: 'var(--titulo-md)', margin: '0 0 var(--espaco-3)', lineHeight: 1.35 }}>
             {palavra}
           </p>
-          <button className="botao-suave" onClick={plantar} disabled={plantada}
-            style={{ color: 'var(--sobre-escuro)', borderColor: 'rgba(239,231,214,0.4)' }}>
-            {plantada ? 'guardada no seu banco' : 'guardar no meu banco'}
+          <button className="botao-suave" onClick={plantar} disabled={plantada} style={corBotao}>
+            {plantada ? 'plantada. agora é sua.' : 'Plantar no meu banco'}
           </button>
         </>
       )}
-
       {estado === 'erro' && (
-        <p style={{ color: 'var(--sobre-escuro-suave)', margin: 0 }}>
-          Hoje a palavra não veio. Respira — ela volta.
-        </p>
+        <p style={{ color: 'var(--sobre-escuro-suave)', margin: 0 }}>Hoje a palavra não veio. Respira, ela volta.</p>
       )}
       {estado === 'sem-backend' && (
-        <p style={{ color: 'var(--sobre-escuro-suave)', margin: 0 }}>
-          A palavra de hoje precisa do backend ligado para ser gerada.
-        </p>
+        <p style={{ color: 'var(--sobre-escuro-suave)', margin: 0 }}>A palavra de hoje precisa do backend ligado para ser gerada.</p>
       )}
     </div>
   );
@@ -106,17 +107,17 @@ function GestoDiario() {
       ) : (
         <form onSubmit={registrar} style={{ display: 'grid', gap: 'var(--espaco-2)' }}>
           <p style={{ color: 'var(--sobre-escuro-suave)', margin: 0 }}>
-            Um gesto pequeno por você — descansar, dizer não, um copo d'água sem pressa. O que foi hoje?
+            Que gesto de amor por você coube no dia de hoje?
           </p>
           <input
             value={texto}
             onChange={(e) => setTexto(e.target.value)}
-            placeholder="Hoje eu me dei…"
+            placeholder="Escreva o gesto de hoje..."
             style={{ border: '1px solid rgba(239,231,214,0.3)', background: 'rgba(0,0,0,0.12)', color: 'var(--sobre-escuro)', borderRadius: 'var(--raio-sm)', padding: '10px var(--espaco-2)' }}
           />
           <div>
             <button type="submit" className="botao-suave" style={{ color: 'var(--sobre-escuro)', borderColor: 'rgba(239,231,214,0.4)' }}>
-              registrar
+              Guardar
             </button>
           </div>
         </form>
@@ -150,22 +151,27 @@ function BancoPessoal() {
           value={texto}
           onChange={(e) => setTexto(e.target.value)}
           rows={2}
-          placeholder="Uma palavra sua."
+          placeholder={'Ex.: "Você já atravessou coisa pior, e atravessou bonito."'}
           style={{ resize: 'vertical', border: '1px solid var(--linha)', borderRadius: 'var(--raio-sm)', padding: 'var(--espaco-2)', background: 'var(--papel)' }}
         />
         <div>
-          <button type="submit" className="botao" disabled={!texto.trim()}>Guardar</button>
+          <button type="submit" className="botao" disabled={!texto.trim()}>Plantar</button>
         </div>
       </form>
 
       {palavras.length > 0 && (
-        <ul style={{ listStyle: 'none', padding: 0, display: 'grid', gap: 'var(--espaco-1)' }}>
-          {palavras.map((p) => (
-            <li key={p.id} className="card" style={{ padding: 'var(--espaco-2)', fontFamily: 'var(--fonte-titulo)', fontStyle: 'italic' }}>
-              {p.text}
-            </li>
-          ))}
-        </ul>
+        <>
+          <p style={{ fontFamily: 'var(--fonte-titulo)', fontStyle: 'italic', color: 'var(--tinta-suave)', fontSize: 'var(--corpo-pequeno)', margin: '0 0 var(--espaco-1)' }}>
+            {palavras.length} {palavras.length === 1 ? 'palavra plantada' : 'palavras plantadas'}
+          </p>
+          <ul style={{ listStyle: 'none', padding: 0, display: 'grid', gap: 'var(--espaco-1)' }}>
+            {palavras.map((p) => (
+              <li key={p.id} className="card" style={{ padding: 'var(--espaco-2)', fontFamily: 'var(--fonte-titulo)', fontStyle: 'italic' }}>
+                {p.text}
+              </li>
+            ))}
+          </ul>
+        </>
       )}
     </div>
   );

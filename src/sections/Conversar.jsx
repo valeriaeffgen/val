@@ -56,7 +56,7 @@ export default function Conversar({ chegada, mensagemInicial, onMensagemConsumid
       setErro(
         err?.message === 'sem-backend'
           ? 'A conversa com a Val ainda não está ligada aqui. Quando o backend estiver configurado, eu te ouço.'
-          : 'Não consegui responder agora. Respira — daqui a pouco eu volto.'
+          : 'Não consegui responder agora. Respira, daqui a pouco eu volto.'
       );
     } finally {
       setPensando(false);
@@ -96,7 +96,7 @@ export default function Conversar({ chegada, mensagemInicial, onMensagemConsumid
             if (e.key === 'Enter' && !e.shiftKey) enviar(e);
           }}
           rows={3}
-          placeholder="Escreve aqui."
+          placeholder="O que está pesando? Ou o que está bonito hoje?"
           style={{ resize: 'vertical', border: '1px solid var(--linha)', borderRadius: 'var(--raio-sm)', padding: 'var(--espaco-2)', background: 'var(--papel-branco)' }}
         />
         <div>

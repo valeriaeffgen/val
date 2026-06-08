@@ -140,15 +140,17 @@ function Feedback() {
   if (respondidoHoje || acabouDeResponder) {
     return (
       <div className="card" style={{ marginTop: 'var(--espaco-3)', color: 'var(--tinta-suave)' }}>
-        <p style={{ margin: 0 }}>Obrigada por dizer. Eu uso isso pra te servir melhor.</p>
+        <p style={{ margin: 0, fontFamily: 'var(--fonte-titulo)', fontStyle: 'italic', color: 'var(--ambar)' }}>
+          obrigada por dizer. isso me ajuda a cuidar melhor de você.
+        </p>
       </div>
     );
   }
 
-  const opcoes = ['Tem sido', 'Mais ou menos', 'Ainda não sei'];
+  const opcoes = ['Tem me ajudado', 'Mais ou menos', 'Ainda não'];
   return (
     <div className="card" style={{ marginTop: 'var(--espaco-3)' }}>
-      <h3 style={{ marginTop: 0 }}>Isso está sendo bom pra você?</h3>
+      <h3 style={{ marginTop: 0, fontStyle: 'italic' }}>Me conta: o santuário está sendo bom pra você?</h3>
       <div style={{ display: 'flex', gap: 'var(--espaco-1)', flexWrap: 'wrap' }}>
         {opcoes.map((o) => (
           <button key={o} className="botao-suave" onClick={() => responder(o)}>{o}</button>

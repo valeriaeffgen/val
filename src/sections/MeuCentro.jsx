@@ -8,10 +8,10 @@ import { usePerfil } from '../lib/useColecao';
  * a camada generativa (regra 3 da seção 7).
  */
 const CAMPOS = [
-  { chave: 'valores', titulo: 'Valores', dica: 'O que te orienta.' },
-  { chave: 'conquistas', titulo: 'O que já é', dica: 'O que você já construiu.' },
-  { chave: 'foco', titulo: 'O que importa agora', dica: 'Sem cobrança — só direção.' },
-  { chave: 'elevadores', titulo: 'Elevadores', dica: 'O que costuma te erguer.' },
+  { chave: 'valores', titulo: 'Meus valores', dica: 'de onde eu opero' },
+  { chave: 'conquistas', titulo: 'O que já é', dica: 'a ansiedade apaga, eu lembro' },
+  { chave: 'foco', titulo: 'O que importa agora', dica: 'um funil, não um acumulador' },
+  { chave: 'elevadores', titulo: 'Meus elevadores', dica: 'o que comprovadamente me sobe' },
 ];
 
 export default function MeuCentro() {

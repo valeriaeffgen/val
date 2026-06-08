@@ -28,7 +28,7 @@ export default function Soltar() {
           value={texto}
           onChange={(e) => setTexto(e.target.value)}
           rows={4}
-          placeholder="Pode escrever sem filtro."
+          placeholder="A tarefa, a ideia, a preocupação que acabou de chegar. Escreva e solte."
           style={{ resize: 'vertical', border: '1px solid var(--linha)', borderRadius: 'var(--raio-sm)', padding: 'var(--espaco-2)', background: 'var(--papel)' }}
         />
         <div>

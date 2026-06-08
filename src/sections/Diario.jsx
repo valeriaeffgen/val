@@ -114,7 +114,7 @@ function GestoAutoamor() {
           <input
             value={texto}
             onChange={(e) => setTexto(e.target.value)}
-            placeholder="Um gesto de amor por mim hoje…"
+            placeholder="Escreva o gesto de hoje..."
             style={{ flex: 1, border: '1px solid rgba(239,231,214,0.3)', background: 'rgba(0,0,0,0.12)', color: 'var(--sobre-escuro)', borderRadius: 'var(--raio-sm)', padding: '10px var(--espaco-2)' }}
           />
           <button type="submit" className="botao-suave" style={{ color: 'var(--sobre-escuro)', borderColor: 'rgba(239,231,214,0.4)' }}>
@@ -174,7 +174,7 @@ function Categorias({ catInicial }) {
           value={texto}
           onChange={(e) => setTexto(e.target.value)}
           rows={3}
-          placeholder="O que você quer guardar?"
+          placeholder="Escreva sem filtro, é só seu."
           style={{ resize: 'vertical', border: '1px solid var(--linha)', borderRadius: 'var(--raio-sm)', padding: 'var(--espaco-2)', background: 'var(--papel)' }}
         />
         <div>

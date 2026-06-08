@@ -24,12 +24,15 @@ export const supabase = hasSupabase
  */
 export async function ensureSession() {
   if (!hasSupabase) return null;
+  const log = (s) => console.info('[Val] seu user id:', s?.user?.id);
   const { data: { session } } = await supabase.auth.getSession();
-  if (session) return session;
+  if (session) { log(session); return session; }
   const { data, error } = await supabase.auth.signInAnonymously();
   if (error) {
     console.warn('Val: não foi possível abrir sessão anônima —', error.message);
     return null;
   }
+  // Útil para semear o próprio perfil (Meu Centro) via SQL: o id da sua conta.
+  log(data.session);
   return data.session;
 }
