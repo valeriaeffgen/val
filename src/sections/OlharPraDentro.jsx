@@ -83,7 +83,7 @@ export default function OlharPraDentro() {
     const pergunta = jornada.perguntas[idx];
     const ultima = idx + 1 === jornada.perguntas.length;
     return (
-      <Secao titulo={jornada.titulo} abertura="Sem pressa. Uma pergunta de cada vez.">
+      <Secao titulo={jornada.titulo} abertura={jornada.convite}>
         <p style={{ color: 'var(--tinta-suave)', fontSize: 'var(--corpo-pequeno)', margin: 0 }}>
           {idx + 1} de {jornada.perguntas.length}
         </p>
@@ -151,7 +151,7 @@ export default function OlharPraDentro() {
   // --- Lista ---
   const espelhos = passados.filter((p) => p.devolutiva);
   return (
-    <Secao titulo="Olhar pra dentro" abertura="Sem pressa. Algumas perguntas, e um espelho ao fim.">
+    <Secao titulo="Olhar pra dentro" abertura="pequenos caminhos de volta a você, perguntas, suas respostas, e um espelho meu">
       <div style={{ display: 'grid', gap: 'var(--espaco-2)' }}>
         {JORNADAS.map((j) => (
           <button
@@ -162,7 +162,7 @@ export default function OlharPraDentro() {
           >
             <h3 style={{ margin: 0 }}>{j.titulo}</h3>
             <p style={{ margin: '6px 0 0', color: 'var(--tinta-suave)', fontSize: 'var(--corpo-pequeno)' }}>
-              {j.perguntas.length} perguntas, e o seu espelho ao fim.
+              {j.convite}
             </p>
           </button>
         ))}
@@ -170,7 +170,7 @@ export default function OlharPraDentro() {
 
       {espelhos.length > 0 && (
         <div style={{ marginTop: 'var(--espaco-4)' }}>
-          <h3 style={{ fontStyle: 'italic' }}>Seus espelhos</h3>
+          <h3 style={{ fontStyle: 'italic' }}>O que você já percorreu</h3>
           <div style={{ display: 'grid', gap: 'var(--espaco-2)' }}>
             {espelhos.map((p) => (
               <div key={p.id} className="card">

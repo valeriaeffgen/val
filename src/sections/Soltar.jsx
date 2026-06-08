@@ -22,7 +22,7 @@ export default function Soltar() {
   }
 
   return (
-    <Secao titulo="Soltar" abertura="O que está pesando na cabeça? Escreve aqui — a mente pode largar.">
+    <Secao titulo="Soltar" abertura="o que insiste na hora errada, guarde aqui e descanse">
       <form onSubmit={soltar} className="card" style={{ display: 'grid', gap: 'var(--espaco-2)' }}>
         <textarea
           value={texto}

@@ -16,7 +16,7 @@ import { hasSupabase } from '../lib/supabase';
  */
 export default function Autoamor() {
   return (
-    <Secao titulo="Autoamor" abertura="Um gesto por você, hoje.">
+    <Secao titulo="Autoamor" abertura="conversa de amiga, e a amiga é você">
       <PalavraDeHoje />
       <GestoDiario />
       <BancoPessoal />
@@ -47,7 +47,10 @@ function PalavraDeHoje() {
 
   return (
     <div className="card-escuro" style={{ marginBottom: 'var(--espaco-3)' }}>
-      <h3 style={{ fontStyle: 'italic', marginTop: 0 }}>A palavra de hoje</h3>
+      <h3 style={{ fontStyle: 'italic', marginTop: 0, marginBottom: 4 }}>A palavra de hoje</h3>
+      <p style={{ color: 'var(--sobre-escuro-suave)', marginTop: 0, fontSize: 'var(--corpo-pequeno)' }}>
+        Uma conversa composta pra você, a partir do que você é, viveu e registrou. Nunca genérica.
+      </p>
 
       {estado === 'carregando' && (
         <p style={{ color: 'var(--sobre-escuro-suave)', margin: 0 }}>A Val está achando a sua…</p>
@@ -137,9 +140,9 @@ function BancoPessoal() {
 
   return (
     <div>
-      <h3 style={{ fontStyle: 'italic' }}>Seu banco</h3>
+      <h3 style={{ fontStyle: 'italic' }}>Palavras pra mim</h3>
       <p style={{ color: 'var(--tinta-suave)', marginTop: 0, fontSize: 'var(--corpo-pequeno)' }}>
-        Escreva num dia em que você se vê com clareza. Num dia pesado, a Val devolve uma destas na sua chegada.
+        Num dia bom, escreva o que diria a você mesma num dia difícil. Eu guardo, e devolvo quando você mais precisar, inclusive na sua chegada.
       </p>
 
       <form onSubmit={guardar} className="card" style={{ display: 'grid', gap: 'var(--espaco-2)', marginBottom: 'var(--espaco-3)' }}>

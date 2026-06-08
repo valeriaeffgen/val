@@ -134,6 +134,13 @@ input {
   padding: 12px 22px;
 }
 
+/* Respiração da Pausa */
+@keyframes val-respira {
+  0%, 100% { transform: scale(0.82); opacity: 0.65; }
+  45% { transform: scale(1.15); opacity: 1; }
+}
+.val-respira { animation: val-respira 10s ease-in-out infinite; }
+
 /* Respeita quem prefere menos movimento */
 @media (prefers-reduced-motion: reduce) {
   * {

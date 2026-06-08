@@ -6,12 +6,26 @@
  * sobe para a fila de curadoria da Valéria.
  */
 
-// Limiar (chegada): "Como você chega?" — os quatro estados (seção 6).
+// Limiar (chegada): "Como você chega?" — os quatro estados (do protótipo).
+// label/desc aparecem nos cards; tone é a cor do topo; valor é o nível (1..4)
+// usado pela Trajetória.
 export const ESTADOS_CHEGADA = [
-  { id: 'pesada', rotulo: 'pesada', valor: 1 },
-  { id: 'agitada', rotulo: 'agitada', valor: 2 },
-  { id: 'neutra', rotulo: 'neutra', valor: 3 },
-  { id: 'elevada', rotulo: 'elevada', valor: 4 },
+  { id: 'pesada', label: 'Pesada', desc: 'tristeza, medo, sensação de falta', tone: '#4a6258', valor: 1 },
+  { id: 'agitada', label: 'Agitada', desc: 'ansiedade, pressa, mil coisas', tone: '#a9683f', valor: 2 },
+  { id: 'neutra', label: 'Neutra', desc: 'nem lá, nem cá', tone: '#8a8a72', valor: 3 },
+  { id: 'elevada', label: 'Elevada', desc: 'leve, grata, presente', tone: '#c9a24b', valor: 4 },
+];
+
+// Pausa / chegada: perguntas que variam e se renovam (seção 7). Do protótipo.
+export const PAUSA_PERGUNTAS = [
+  'O que, neste exato momento, já está bem?',
+  'Isso que pesa agora... vai importar daqui a um ano?',
+  'Que abundância está escondida atrás dessa falta?',
+  'Se você olhasse esta cena com os olhos de quem medita, o que veria?',
+  'O que você tem hoje que um dia foi apenas um desejo?',
+  'Qual é a menor próxima ação possível? Só ela existe.',
+  'Você está correndo de quê... ou para quê?',
+  'Quem reclama de algo, tem algo. O que é o seu algo?',
 ];
 
 // Categorias do Diário (seção 6) — do protótipo da Valéria. Gratidão/perspectiva
@@ -141,30 +155,47 @@ export const FERRAMENTAS_COMO_LIDAR = [
   },
 ];
 
-// Olhar pra dentro: jornadas de autoconhecimento (seção 6). Sementes.
+// Olhar pra dentro: jornadas de autoconhecimento (seção 6). Do protótipo.
 export const JORNADAS = [
   {
-    id: 'o-que-me-sustenta',
-    titulo: 'O que me sustenta',
+    id: 'forcas',
+    titulo: 'Minhas forças invisíveis',
+    convite: 'O que você faz tão naturalmente que nem percebe que é raro.',
     perguntas: [
-      'O que te segurou de pé numa semana difícil recente?',
-      'Quem você é quando ninguém está cobrando nada de você?',
+      'O que as pessoas costumam te agradecer ou elogiar, mesmo quando você acha que não foi nada demais?',
+      'Pense numa coisa difícil que você atravessou. O que em você fez você chegar do outro lado?',
+      'Se uma amiga sua passasse pelo que você passa hoje, o que ela teria a aprender com o seu jeito de lidar?',
+      "Que qualidade sua você diminui com um 'ah, mas isso qualquer um faz'?",
     ],
   },
   {
-    id: 'um-orgulho-pequeno',
-    titulo: 'Um orgulho pequeno',
+    id: 'permito',
+    titulo: 'O que eu não me permito',
+    convite: 'Os limites que você mesma desenhou, e talvez já possa apagar.',
     perguntas: [
-      'Conte um momento recente, pequeno que seja, em que você fez algo de que se orgulha.',
-      'O que esse momento mostra sobre o tipo de pessoa que você é?',
+      "Complete: 'Eu só vou poder descansar / me orgulhar / parar quando...'",
+      'De quem é a voz que diz que você precisa fazer mais para merecer?',
+      "O que você gostaria de fazer, mas acha que 'não é pra você' ou 'não é hora'?",
+      'Se ninguém fosse julgar, o que você se permitiria hoje?',
     ],
   },
   {
-    id: 'o-que-eu-carrego',
-    titulo: 'O que eu carrego',
+    id: 'valor',
+    titulo: 'Meu valor não negociável',
+    convite: 'Separar quem você é do quanto você produz.',
     perguntas: [
-      'O que você tem carregado que já podia pousar um pouco?',
-      'Se uma amiga querida estivesse carregando isso, o que você diria a ela?',
+      'Se você não pudesse trabalhar nem produzir nada por um mês, o que ainda assim faria de você quem você é?',
+      'Quando foi a última vez que você se orgulhou de algo que não tinha a ver com resultado?',
+      'O que as pessoas que te amam veem em você que não está no seu currículo?',
+      'Que parte de você merece carinho hoje, e quase nunca recebe o seu?',
     ],
   },
+];
+
+// Vídeos (seção 6, rodapé): a Valéria grava; aqui ficam os cabeçalhos. Do protótipo.
+export const VIDEOS_DEMO = [
+  { titulo: 'Quando a mente acelera', dur: '3 min', tipo: 'Reflexão rápida', desc: 'Um lembrete curto pra quando tudo parece urgente ao mesmo tempo.' },
+  { titulo: 'Quem reclama de algo, tem algo', dur: '4 min', tipo: 'Reflexão rápida', desc: 'Sobre virar a queixa em gratidão sem forçar positividade.' },
+  { titulo: 'O futuro não está aqui', dur: '5 min', tipo: 'Explicação', desc: 'Como o medo do futuro funciona, e o caminho de volta ao presente.' },
+  { titulo: 'Você não é o que produz', dur: '6 min', tipo: 'Explicação', desc: 'Separar valor de produtividade, na prática.' },
 ];

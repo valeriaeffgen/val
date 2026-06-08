@@ -7,7 +7,7 @@ import Secao, { EmConstrucao } from '../components/Secao';
  */
 export default function Cartas() {
   return (
-    <Secao titulo="Cartas" abertura="Aqui do outro lado tem gente. A Valéria lê, e responde quando puder.">
+    <Secao titulo="Cartas" abertura="me escreva como quem escreve a uma amiga, eu respondo, de pessoa pra pessoa">
       <EmConstrucao nota="Você escreve uma carta; a resposta vem de uma pessoa, não de uma máquina. Sem pressa de chegar, sem pressa de responder." />
     </Secao>
   );

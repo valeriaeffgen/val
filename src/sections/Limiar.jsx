@@ -1,75 +1,50 @@
-import { useState } from 'react';
 import { ESTADOS_CHEGADA } from '../data/seed';
-import { db } from '../lib/db';
 
 /*
- * Limiar (chegada) — o ritual de entrada (seção 6).
- * "Como você chega?" → pesada / agitada / neutra / elevada.
- * Aparecer já é a vitória (princípio 1): nenhum estado é penalizado.
- *
- * Pesada recebe uma palavra do banco dela (seção 6): num dia difícil, a Val
- * devolve algo que a própria mulher escreveu num dia de clareza.
+ * Limiar (chegada) — o ritual de entrada (seção 6). Do protótipo da Valéria.
+ * "Como você chega?" → pesada / agitada / neutra / elevada, com a descrição de
+ * cada estado. Aparecer já é a vitória: dá pra "só entrar", sem escolher.
  */
-export default function Limiar({ onChegada }) {
-  const [acolhimento, setAcolhimento] = useState(null); // { estado, palavra }
-
-  async function escolher(estado) {
-    if (estado.id === 'pesada') {
-      const palavras = await db.listar('palavras').catch(() => []);
-      const colhida = palavras.length
-        ? palavras[Math.floor(Math.random() * palavras.length)].text
-        : null;
-      setAcolhimento({ estado, palavra: colhida });
-    } else {
-      onChegada(estado);
-    }
-  }
-
-  if (acolhimento) {
-    return (
-      <section style={{ minHeight: '100%', display: 'grid', placeItems: 'center', padding: 'var(--espaco-4) var(--espaco-3)' }}>
-        <div style={{ textAlign: 'center', maxWidth: '46ch' }}>
-          <div className="card-escuro">
-            {acolhimento.palavra ? (
-              <>
-                <p style={{ color: 'var(--sobre-escuro-suave)', margin: '0 0 var(--espaco-2)', fontSize: 'var(--corpo-pequeno)' }}>
-                  De um dia em que você se viu com clareza:
-                </p>
-                <p style={{ fontFamily: 'var(--fonte-titulo)', fontStyle: 'italic', fontSize: 'var(--titulo-md)', margin: 0, lineHeight: 1.35 }}>
-                  {acolhimento.palavra}
-                </p>
-              </>
-            ) : (
-              <p style={{ margin: 0, color: 'var(--sobre-escuro)' }}>
-                Dia pesado também é dia. Você chegou — fica o tempo que precisar.
-              </p>
-            )}
-          </div>
-          <button className="botao-suave" onClick={() => onChegada(acolhimento.estado)} style={{ marginTop: 'var(--espaco-3)' }}>
-            seguir
-          </button>
-        </div>
-      </section>
-    );
-  }
-
+export default function Limiar({ onChegar, onPular }) {
   return (
     <section style={{ minHeight: '100%', display: 'grid', placeItems: 'center', padding: 'var(--espaco-4) var(--espaco-3)' }}>
-      <div style={{ textAlign: 'center', maxWidth: '46ch' }}>
-        <p className="assinatura" style={{ fontSize: '3rem', marginBottom: 'var(--espaco-3)' }}>
+      <div style={{ maxWidth: 560, width: '100%', textAlign: 'center' }}>
+        <p className="assinatura" style={{ fontSize: '3.4rem', margin: 0 }}>
           Val<span className="ponto">.</span>
         </p>
-        <h1 style={{ fontStyle: 'italic' }}>Como você chega?</h1>
-        <div style={{ display: 'flex', gap: 'var(--espaco-1)', flexWrap: 'wrap', justifyContent: 'center', marginTop: 'var(--espaco-3)' }}>
-          {ESTADOS_CHEGADA.map((estado) => (
-            <button key={estado.id} className="botao-suave" onClick={() => escolher(estado)}>
-              {estado.rotulo}
+        <p style={{ fontFamily: 'var(--fonte-titulo)', fontStyle: 'italic', color: 'var(--tinta-suave)', margin: '8px 0 var(--espaco-4)' }}>
+          seu santuário, entre como estiver
+        </p>
+
+        <h1 style={{ fontStyle: 'italic', marginBottom: 'var(--espaco-3)' }}>Como você chega?</h1>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 'var(--espaco-1)' }}>
+          {ESTADOS_CHEGADA.map((v) => (
+            <button
+              key={v.id}
+              onClick={() => onChegar(v.id)}
+              style={{
+                background: 'var(--papel-branco)',
+                border: '1px solid var(--linha)',
+                borderTop: `3px solid ${v.tone}`,
+                borderRadius: 'var(--raio-sm)',
+                padding: '20px 16px',
+                textAlign: 'left',
+                cursor: 'pointer',
+              }}
+            >
+              <div style={{ fontFamily: 'var(--fonte-titulo)', fontSize: '1.25rem', fontWeight: 500, color: 'var(--verde-petroleo)' }}>{v.label}</div>
+              <div style={{ fontSize: 'var(--corpo-pequeno)', color: 'var(--tinta-suave)', marginTop: 4, lineHeight: 1.4 }}>{v.desc}</div>
             </button>
           ))}
         </div>
-        <p style={{ color: 'var(--tinta-suave)', marginTop: 'var(--espaco-3)', fontSize: 'var(--corpo-pequeno)' }}>
-          Não tem chegada errada. Você chegou — isso já basta.
-        </p>
+
+        <button
+          onClick={onPular}
+          style={{ marginTop: 'var(--espaco-3)', background: 'transparent', border: 'none', color: 'var(--tinta-suave)', fontFamily: 'var(--fonte-titulo)', fontStyle: 'italic', cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: 3 }}
+        >
+          só entrar
+        </button>
       </div>
     </section>
   );

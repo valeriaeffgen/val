@@ -65,9 +65,17 @@ const json = (corpo: unknown, status = 200) =>
 
 // Monta o contexto pessoal da mulher (regra 3) a partir do banco, sob a RLS dela.
 // Curto e sóbrio — a Val sabe, mas não exibe que sabe.
+// Adaptação por estado de chegada (do protótipo da Valéria).
+const ADAPTACAO: Record<string, string> = {
+  pesada: 'Ela chegou pesada hoje. Colo primeiro, devagar. Se fizer sentido, ofereça UM elevador, o mais simples possível para o momento.',
+  agitada: 'Ela chegou agitada hoje. Dê chão e reduza para uma coisa só. Nada precisa ser resolvido neste minuto.',
+  neutra: 'Ela chegou neutra hoje. Um convite suave à contemplação, qualquer beleza notada já eleva.',
+  elevada: 'Ela chegou elevada hoje. Não atrapalhe, celebre curto e ajude a ancorar: nomear o que elevou, para repetir.',
+};
+
 async function montarContexto(supabase: any, chegada: string | null): Promise<string> {
   const partes: string[] = [];
-  if (chegada) partes.push(`Como ela chegou hoje: ${chegada}.`);
+  if (chegada && ADAPTACAO[chegada]) partes.push(ADAPTACAO[chegada]);
 
   const { data: perfil } = await supabase.from("perfil").select("*").maybeSingle();
   if (perfil) {

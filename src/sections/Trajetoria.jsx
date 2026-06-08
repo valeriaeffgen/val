@@ -18,7 +18,7 @@ import { ESTADOS_CHEGADA } from '../data/seed';
  */
 
 const NIVEL = Object.fromEntries(ESTADOS_CHEGADA.map((e) => [e.id, e.valor])); // id → 1..4
-const ROTULO = Object.fromEntries(ESTADOS_CHEGADA.map((e) => [e.valor, e.rotulo]));
+const ROTULO = Object.fromEntries(ESTADOS_CHEGADA.map((e) => [e.valor, e.label]));
 
 export default function Trajetoria() {
   const sessoes = useColecao('sessoes');
@@ -30,7 +30,7 @@ export default function Trajetoria() {
     .filter((v) => typeof v === 'number');
 
   return (
-    <Secao titulo="Trajetória" abertura="A sua história, devolvida com ternura.">
+    <Secao titulo="Trajetória" abertura="não pra cobrar, pra você ver, com os próprios olhos, o estado virando padrão">
       <div className="card-escuro">
         {pontos.length === 0 ? (
           <p style={{ color: 'var(--sobre-escuro-suave)', margin: 0 }}>

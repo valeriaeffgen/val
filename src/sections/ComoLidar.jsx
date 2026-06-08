@@ -22,9 +22,9 @@ export default function ComoLidar() {
   }
 
   return (
-    <Secao titulo="Como lidar" abertura="Quando aperta agora. Vamos achar o próximo passo pequeno.">
+    <Secao titulo="Como lidar" abertura="uma caixa de ferramentas para os momentos difíceis">
       <div style={{ marginBottom: 'var(--espaco-3)' }}>
-        <button className="botao" onClick={surpreender}>Surpreenda-me</button>
+        <button className="botao" onClick={surpreender}>surpreenda-me</button>
       </div>
 
       <div style={{ display: 'grid', gap: 'var(--espaco-2)' }}>

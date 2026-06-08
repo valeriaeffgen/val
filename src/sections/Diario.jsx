@@ -16,12 +16,12 @@ import { CATEGORIAS_DIARIO } from '../data/seed';
 const CATEGORIAS = CATEGORIAS_DIARIO.filter((c) => c.id !== 'elogio' && c.id !== 'autoamor');
 const LABEL = Object.fromEntries(CATEGORIAS_DIARIO.map((c) => [c.id, c.label]));
 
-export default function Diario() {
+export default function Diario({ catInicial }) {
   return (
-    <Secao titulo="Diário" abertura="O que vale guardar do dia.">
+    <Secao titulo="Diário" abertura="o que vale guardar do dia, pra reler num dia cinza">
       <Elogios />
       <GestoAutoamor />
-      <Categorias />
+      <Categorias catInicial={catInicial} />
     </Secao>
   );
 }
@@ -43,7 +43,7 @@ function Elogios() {
 
   return (
     <div className="card-escuro" style={{ marginBottom: 'var(--espaco-3)' }}>
-      <h3 style={{ fontStyle: 'italic', marginTop: 0 }}>As três luzes</h3>
+      <h3 style={{ fontStyle: 'italic', marginTop: 0 }}>Elogios de hoje</h3>
       <p style={{ color: 'var(--sobre-escuro-suave)', marginTop: 0, fontSize: 'var(--corpo-pequeno)' }}>
         {acesas >= 3 ? 'Três pessoas saíram maiores do seu dia.' : 'três pessoas, três luzes acesas'}
       </p>
@@ -127,9 +127,10 @@ function GestoAutoamor() {
 }
 
 // --- Categorias de gratidão/perspectiva ---------------------------------------
-function Categorias() {
+function Categorias({ catInicial }) {
   const diario = useColecao('diario');
-  const [cat, setCat] = useState(CATEGORIAS[0].id);
+  const inicial = CATEGORIAS.some((c) => c.id === catInicial) ? catInicial : CATEGORIAS[0].id;
+  const [cat, setCat] = useState(inicial);
   const [texto, setTexto] = useState('');
   const categoria = CATEGORIAS.find((c) => c.id === cat);
 

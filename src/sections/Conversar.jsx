@@ -11,20 +11,35 @@ import { hasSupabase } from '../lib/supabase';
  * As mensagens vivem no estado da visita (não persistem ainda) — uma tabela de
  * conversas pode entrar depois, se fizer sentido para a Trajetória.
  */
-export default function Conversar({ chegada }) {
+export default function Conversar({ chegada, mensagemInicial, onMensagemConsumida }) {
   const [mensagens, setMensagens] = useState([]);
   const [texto, setTexto] = useState('');
   const [pensando, setPensando] = useState(false);
   const [erro, setErro] = useState(null);
   const fim = useRef(null);
+  const inicialEnviada = useRef(false);
 
   useEffect(() => {
     fim.current?.scrollIntoView({ behavior: 'smooth' });
   }, [mensagens, pensando]);
 
-  async function enviar(e) {
+  // Mensagem semeada por uma ação de chegada (ex.: "Cheguei pesada hoje.").
+  useEffect(() => {
+    if (mensagemInicial && !inicialEnviada.current) {
+      inicialEnviada.current = true;
+      enviarTexto(mensagemInicial);
+      onMensagemConsumida?.();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mensagemInicial]);
+
+  function enviar(e) {
     e.preventDefault();
-    const t = texto.trim();
+    enviarTexto(texto);
+  }
+
+  async function enviarTexto(bruto) {
+    const t = (bruto ?? '').trim();
     if (!t || pensando) return;
 
     const novas = [...mensagens, { role: 'user', text: t }];
