@@ -59,5 +59,33 @@ export async function gerarFerramenta(situacao) {
   const { data, error } = await supabase.functions.invoke('ferramenta', { body: { situacao } });
   if (error) throw error;
   if (data?.erro) throw new Error(data.erro);
-  return { ferramenta: data.ferramenta, cache: data.cache };
+  return { ferramenta: data.ferramenta, cache: data.cache, id: data.id };
+}
+
+/*
+ * "Isso me ajudou" — voto de utilidade num conteúdo gerado (regra da fila de
+ * curadoria, seção 7). Sobe para a fila quando cruza o limiar de votos.
+ */
+export async function marcarUtil(conteudoId) {
+  if (!hasSupabase || !conteudoId) return;
+  await supabase.rpc('marcar_util', { conteudo: conteudoId });
+}
+
+/*
+ * Acervo oficial: as ferramentas que a Valéria aprovou na curadoria, visíveis
+ * para todas (RLS: status 'oficial' é legível por qualquer usuária).
+ */
+export async function ferramentasOficiais() {
+  if (!hasSupabase) return [];
+  const { data, error } = await supabase
+    .from('conteudo_gerado')
+    .select('id, texto')
+    .eq('tipo', 'ferramenta')
+    .eq('status', 'oficial')
+    .order('util_count', { ascending: false })
+    .limit(20);
+  if (error) return [];
+  return (data ?? []).flatMap((r) => {
+    try { return [{ id: r.id, ...JSON.parse(r.texto) }]; } catch { return []; }
+  });
 }

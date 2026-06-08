@@ -10,7 +10,9 @@ cole o conteúdo de [`migrations/0001_init.sql`](./migrations/0001_init.sql) →
 _Run_.
 
 Aplique também `migrations/0002_ferramentas_geradas.sql` (habilita `pgvector`,
-o embedding e a busca por similaridade do cache do Como lidar).
+o embedding e a busca por similaridade do cache do Como lidar) e
+`migrations/0003_curadoria.sql` (o voto "isso me ajudou", a promoção para a
+fila de curadoria, e o status `descartado`).
 
 **Pela CLI:**
 

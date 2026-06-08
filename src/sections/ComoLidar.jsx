@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Secao from '../components/Secao';
 import { FERRAMENTAS_COMO_LIDAR } from '../data/seed';
-import { gerarFerramenta } from '../lib/val';
+import { gerarFerramenta, marcarUtil, ferramentasOficiais } from '../lib/val';
 
 /*
  * Como lidar (seção 6) — caixa de ferramentas para o agudo.
@@ -23,7 +23,13 @@ export default function ComoLidar({ onNavegar, onPausa }) {
   // Geração sob demanda
   const [busca, setBusca] = useState('');
   const [gerada, setGerada] = useState(null);
+  const [geradaId, setGeradaId] = useState(null);
+  const [util, setUtil] = useState(false);
   const [estado, setEstado] = useState('inicio'); // inicio | gerando | erro | sem-backend
+
+  // Acervo oficial (o que a Valéria aprovou na curadoria), visível para todas.
+  const [oficiais, setOficiais] = useState([]);
+  useEffect(() => { ferramentasOficiais().then(setOficiais).catch(() => {}); }, []);
 
   function alternar(id) {
     setAbertaId((atual) => (atual === id ? null : id));
@@ -41,13 +47,20 @@ export default function ComoLidar({ onNavegar, onPausa }) {
     if (!s) return;
     setEstado('gerando');
     setGerada(null);
+    setUtil(false);
     try {
-      const { ferramenta } = await gerarFerramenta(s);
+      const { ferramenta, id } = await gerarFerramenta(s);
       setGerada(ferramenta);
+      setGeradaId(id);
       setEstado('inicio');
     } catch (err) {
       setEstado(err?.message === 'sem-backend' ? 'sem-backend' : 'erro');
     }
+  }
+
+  async function ajudou() {
+    setUtil(true);
+    await marcarUtil(geradaId).catch(() => {});
   }
 
   return (
@@ -86,6 +99,17 @@ export default function ComoLidar({ onNavegar, onPausa }) {
           <div className="card" style={{ borderTop: '3px solid var(--ambar)' }}>
             <h3 style={{ marginTop: 0 }}>{gerada.situacao}</h3>
             <Detalhe ferramenta={gerada} onNavegar={onNavegar} onPausa={onPausa} />
+            {geradaId && (
+              <div style={{ marginTop: 'var(--espaco-3)', paddingTop: 'var(--espaco-2)', borderTop: '1px dashed var(--linha)' }}>
+                {util ? (
+                  <p style={{ margin: 0, fontFamily: 'var(--fonte-titulo)', fontStyle: 'italic', color: 'var(--ambar)' }}>
+                    obrigada. isso ajuda a Val a melhorar pra todas.
+                  </p>
+                ) : (
+                  <button className="botao-suave" onClick={ajudou}>isso me ajudou</button>
+                )}
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -108,6 +132,26 @@ export default function ComoLidar({ onNavegar, onPausa }) {
           </div>
         ))}
       </div>
+
+      {oficiais.length > 0 && (
+        <div style={{ marginTop: 'var(--espaco-4)' }}>
+          <h3 style={{ fontStyle: 'italic' }}>Do acervo da Val</h3>
+          <div style={{ display: 'grid', gap: 'var(--espaco-2)' }}>
+            {oficiais.map((f) => (
+              <div key={f.id} className="card">
+                <button
+                  onClick={() => alternar('of-' + f.id)}
+                  aria-expanded={abertaId === 'of-' + f.id}
+                  style={{ background: 'none', border: 'none', padding: 0, width: '100%', textAlign: 'left', cursor: 'pointer' }}
+                >
+                  <h3 style={{ margin: 0 }}>{f.situacao}</h3>
+                </button>
+                {abertaId === 'of-' + f.id && <Detalhe ferramenta={f} onNavegar={onNavegar} onPausa={onPausa} />}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </Secao>
   );
 }

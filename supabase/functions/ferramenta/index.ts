@@ -100,7 +100,7 @@ Deno.serve(async (req) => {
     const { data: parecida } = await admin.rpc("ferramenta_parecida", { consulta: embStr });
     if (Array.isArray(parecida) && parecida.length > 0) {
       try {
-        return json({ ferramenta: JSON.parse(parecida[0].texto), cache: true, similaridade: parecida[0].similaridade });
+        return json({ ferramenta: JSON.parse(parecida[0].texto), cache: true, id: parecida[0].id, similaridade: parecida[0].similaridade });
       } catch { /* segue para gerar */ }
     }
 
@@ -134,15 +134,15 @@ Deno.serve(async (req) => {
     ferramenta.caminhos = caminhos.slice(0, 2);
 
     // Guarda no acervo gerado, com o embedding, para servir as próximas mulheres.
-    await admin.from("conteudo_gerado").insert({
+    const { data: nova } = await admin.from("conteudo_gerado").insert({
       user_id: user.id,
       tipo: "ferramenta",
       contexto: { consulta: situacao.trim() },
       texto: JSON.stringify(ferramenta),
       embedding: embStr,
-    });
+    }).select("id").single();
 
-    return json({ ferramenta, cache: false });
+    return json({ ferramenta, cache: false, id: nova?.id });
   } catch (e) {
     console.error("ferramenta: erro inesperado", e);
     return json({ erro: "inesperado" }, 500);
