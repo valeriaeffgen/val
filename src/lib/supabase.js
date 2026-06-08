@@ -1,11 +1,10 @@
 /*
- * Cliente Supabase (seção 9).
+ * Cliente Supabase (seção 9) e autenticação por e-mail (link mágico).
  *
- * Se as variáveis de ambiente não estiverem presentes, o app segue rodando em
- * localStorage (ver lib/db.js) — assim a Val funciona em qualquer ambiente,
- * com ou sem backend. Quando há Supabase, abrimos uma sessão anônima por
- * padrão: nada de muro de cadastro logo na chegada (princípio "lugar de
- * retorno, não de cobrança"). A usuária pode vincular e-mail depois.
+ * Sem as variáveis de ambiente, o app roda em localStorage (ver lib/db.js),
+ * útil em desenvolvimento. Com Supabase, a mulher entra com o e-mail dela: a
+ * história a segue entre dias e aparelhos, e cada uma tem um perfil único e
+ * estável (em vez de uma usuária anônima nova por navegador).
  */
 import { createClient } from '@supabase/supabase-js';
 
@@ -18,21 +17,27 @@ export const supabase = hasSupabase
   ? createClient(url, anonKey, { auth: { persistSession: true, autoRefreshToken: true } })
   : null;
 
-/*
- * Garante uma sessão (anônima, se ainda não houver). Necessária porque toda
- * tabela usa auth.uid() e é protegida por RLS.
- */
+// Sessão atual (ou null). Não cria conta anônima: a entrada é por e-mail.
 export async function ensureSession() {
   if (!hasSupabase) return null;
-  const log = (s) => console.info('[Val] seu user id:', s?.user?.id);
   const { data: { session } } = await supabase.auth.getSession();
-  if (session) { log(session); return session; }
-  const { data, error } = await supabase.auth.signInAnonymously();
-  if (error) {
-    console.warn('Val: não foi possível abrir sessão anônima —', error.message);
-    return null;
-  }
-  // Útil para semear o próprio perfil (Meu Centro) via SQL: o id da sua conta.
-  log(data.session);
-  return data.session;
+  return session;
+}
+
+// Login/cadastro por link mágico: se o e-mail já existe, entra; se não, cria.
+export async function entrarComEmail(email) {
+  return supabase.auth.signInWithOtp({
+    email: email.trim(),
+    options: { emailRedirectTo: window.location.origin },
+  });
+}
+
+// Vincula um e-mail a uma sessão anônima existente, preservando o user_id (e
+// portanto todos os dados). É como a história anônima vira conta de verdade.
+export async function vincularEmail(email) {
+  return supabase.auth.updateUser({ email: email.trim() });
+}
+
+export async function sair() {
+  return supabase.auth.signOut();
 }

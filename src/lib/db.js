@@ -45,13 +45,9 @@ const local = {
 // Adaptador Supabase — tabelas reais, protegidas por RLS via auth.uid().
 // =============================================================================
 
-// Sessão garantida uma vez; toda operação espera por ela (RLS exige auth.uid()).
-let sessaoPronta = null;
-const pronto = () => {
-  if (!hasSupabase) return Promise.resolve();
-  if (!sessaoPronta) sessaoPronta = ensureSession();
-  return sessaoPronta;
-};
+// Toda operação espera pela sessão atual (RLS exige auth.uid()). A entrada é
+// gerida pela auth por e-mail (App), então aqui só lemos a sessão vigente.
+const pronto = () => (hasSupabase ? ensureSession() : Promise.resolve());
 
 const PERFIL_VAZIO = { valores: [], conquistas: [], foco: [], elevadores: [] };
 

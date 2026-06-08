@@ -127,3 +127,26 @@ on conflict do nothing;
 A partir daí, `/?caixa` mostra as cartas que chegaram, com um campo para
 responder. Responder grava `resposta`, `status='respondida'` e `respondida_em`;
 a mulher passa a ver a resposta nas "Nossas cartas".
+
+## Autenticação por e-mail (seção 9)
+
+A entrada do app é por e-mail (link mágico, sem senha). Cada mulher tem um
+`user_id` estável; a história a segue entre aparelhos.
+
+**Liberar o login:** Authentication → URL Configuration → inclua o domínio do app
+em Site URL e Redirect URLs (o mesmo já usado pela caixa). O provedor de e-mail
+vem ligado por padrão.
+
+**Migrar uma sessão anônima para conta:** dentro do app, Meu Centro → "Guarde a
+sua história" → e-mail. Isso vincula a conta anônima ao e-mail mantendo o mesmo
+`user_id` (nenhum dado se perde). Se o e-mail já existir como usuária, use a
+reatribuição por SQL (mover `user_id` das tabelas do id antigo para o novo).
+
+**Limpar usuárias anônimas duplicadas** (depois de migrar a sua):
+
+```sql
+delete from auth.users where is_anonymous = true; -- cascata remove os dados órfãos
+```
+
+A RLS não muda: todas as tabelas filtram por `user_id = auth.uid()`, então cada
+mulher continua vendo só os próprios dados depois do login.

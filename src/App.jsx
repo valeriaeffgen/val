@@ -6,8 +6,10 @@ import Pausa from './components/Pausa';
 import CapturaSaida from './components/CapturaSaida';
 import Videos from './sections/Videos';
 import Caixa from './sections/Caixa';
+import Entrada from './sections/Entrada';
 import { SECOES } from './sections';
-import { db, iniciarSessao } from './lib/db';
+import { db } from './lib/db';
+import { supabase, hasSupabase } from './lib/supabase';
 import { PAUSA_PERGUNTAS } from './data/seed';
 
 // Caixa de entrada da Valéria: acessível por /?caixa (sem login anônimo).
@@ -83,7 +85,19 @@ export default function App() {
   const [mensagemInicial, setMensagemInicial] = useState(null);
   const [diarioCat, setDiarioCat] = useState(null);
 
-  useEffect(() => { if (!MODO_CAIXA) iniciarSessao(); }, []);
+  // Autenticação por e-mail: a sessão decide se mostramos a Entrada ou o app.
+  const [authCarregando, setAuthCarregando] = useState(hasSupabase);
+  const [sessao, setSessao] = useState(null);
+
+  useEffect(() => {
+    if (!hasSupabase || MODO_CAIXA) { setAuthCarregando(false); return; }
+    supabase.auth.getSession().then(({ data }) => {
+      setSessao(data.session);
+      setAuthCarregando(false);
+    });
+    const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => setSessao(s));
+    return () => sub.subscription.unsubscribe();
+  }, []);
 
   async function aoChegar(vibeId) {
     setEntrou(true);
@@ -154,6 +168,16 @@ export default function App() {
     return <Caixa />;
   }
 
+  // Porta de entrada por e-mail (quando há backend). Sem backend, segue local.
+  if (hasSupabase) {
+    if (authCarregando) {
+      return <section style={{ minHeight: '100%', display: 'grid', placeItems: 'center' }}><p style={{ color: 'var(--tinta-suave)' }}>um instante…</p></section>;
+    }
+    if (!sessao) {
+      return <Entrada />;
+    }
+  }
+
   if (!entrou) {
     return <Limiar onChegar={aoChegar} onPular={aoPular} />;
   }
@@ -183,6 +207,7 @@ export default function App() {
             catInicial={diarioCat}
             onNavegar={navegar}
             onPausa={abrirPausa}
+            sessao={sessao}
           />
         ) : null}
       </main>
