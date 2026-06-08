@@ -1,0 +1,39 @@
+# Publica a função Edge `conversar` no Supabase a partir do repositório.
+#
+# Sem terminal: roda na nuvem (GitHub Actions). É inerte até você adicionar o
+# segredo SUPABASE_ACCESS_TOKEN nas configurações do repositório.
+#
+# Como ligar (uma vez):
+#   1. Supabase → canto superior direito (sua conta) → Access Tokens →
+#      Generate new token. Copie o token.
+#   2. GitHub → este repositório → Settings → Secrets and variables → Actions →
+#      New repository secret. Nome: SUPABASE_ACCESS_TOKEN  Valor: o token.
+#   3. GitHub → aba Actions → "Publicar função conversar" → Run workflow
+#      (ou faça qualquer push que toque supabase/functions/**).
+#
+# A ANTHROPIC_API_KEY NÃO entra aqui — ela já é segredo do projeto no Supabase.
+
+name: Publicar função conversar
+
+on:
+  push:
+    branches: [claude/awesome-ptolemy-kpI2A]
+    paths: ['supabase/functions/**']
+  workflow_dispatch: {}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      PROJECT_REF: rnysmlbfeovevapxyvpf
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Instalar o Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Publicar a função (verify_jwt ligado)
+        run: supabase functions deploy conversar --project-ref "$PROJECT_REF"
