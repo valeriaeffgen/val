@@ -105,17 +105,24 @@ export default function App() {
     setSecaoId('conversar');
   }
 
-  function abrirPausa() {
-    setPausaQ(PAUSA_PERGUNTAS[Math.floor(Math.random() * PAUSA_PERGUNTAS.length)]);
+  function abrirPausa(pergunta) {
+    setPausaQ(pergunta || PAUSA_PERGUNTAS[Math.floor(Math.random() * PAUSA_PERGUNTAS.length)]);
     setPausa(true);
+  }
+
+  // Navegação pedida por uma seção (ex.: os caminhos do Como lidar).
+  function navegar({ secao, mensagem = null, cat = null }) {
+    setResposta(null);
+    setMensagemInicial(mensagem);
+    setDiarioCat(cat);
+    setSecaoId(secao);
   }
 
   function onAcao(a) {
     if (a.tipo === 'pausa') return abrirPausa();
-    setResposta(null);
-    if (a.tipo === 'secao') setSecaoId(a.secao);
-    else if (a.tipo === 'diario') { setDiarioCat(a.cat); setSecaoId('diario'); }
-    else if (a.tipo === 'chat') { setMensagemInicial(a.msg); setSecaoId('conversar'); }
+    if (a.tipo === 'diario') return navegar({ secao: 'diario', cat: a.cat });
+    if (a.tipo === 'chat') return navegar({ secao: 'conversar', mensagem: a.msg });
+    navegar({ secao: a.secao });
   }
 
   async function ancorar(texto) {
@@ -174,6 +181,8 @@ export default function App() {
             mensagemInicial={mensagemInicial}
             onMensagemConsumida={() => setMensagemInicial(null)}
             catInicial={diarioCat}
+            onNavegar={navegar}
+            onPausa={abrirPausa}
           />
         ) : null}
       </main>

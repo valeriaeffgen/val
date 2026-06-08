@@ -60,6 +60,7 @@ export const FERRAMENTAS_COMO_LIDAR = [
       'Se for agir, aja depois. Nunca dentro do pico.',
     ],
     pergunta: 'O que essa irritação está protegendo?',
+    caminhos: ['pausa', 'conversar'],
   },
   {
     id: 'discussao',
@@ -71,6 +72,7 @@ export const FERRAMENTAS_COMO_LIDAR = [
       'Se travou, peça uma pausa de 20 minutos. Não é fuga, é deixar o corpo voltar ao normal.',
     ],
     pergunta: 'Você quer ter razão, ou quer ficar bem com quem ama?',
+    caminhos: ['conversar', 'pausa'],
   },
   {
     id: 'comparacao',
@@ -81,6 +83,7 @@ export const FERRAMENTAS_COMO_LIDAR = [
       'Volte ao seu placar, o que você construiu que um dia foi só desejo?',
     ],
     pergunta: 'A inveja é um mapa. O que ela está te mostrando que você quer de verdade?',
+    caminhos: ['conversar', 'autoamor'],
   },
   {
     id: 'excesso',
@@ -92,6 +95,7 @@ export const FERRAMENTAS_COMO_LIDAR = [
       'O resto não sumiu, está guardado. Você volta.',
     ],
     pergunta: 'Se só uma coisa pudesse acontecer hoje, qual te deixaria em paz?',
+    caminhos: ['soltar', 'conversar'],
   },
   {
     id: 'futuro',
@@ -102,6 +106,7 @@ export const FERRAMENTAS_COMO_LIDAR = [
       'Separe o que você controla do que não controla. Cuide só do primeiro.',
     ],
     pergunta: 'Neste exato momento, falta alguma coisa de verdade?',
+    caminhos: ['pausa', 'conversar'],
   },
   {
     id: 'autocritica',
@@ -112,6 +117,7 @@ export const FERRAMENTAS_COMO_LIDAR = [
       'Você falaria assim com uma amiga querida? Fale consigo com a mesma decência.',
     ],
     pergunta: 'O que essa cobrança esconde de cansaço, ou de medo?',
+    caminhos: ['autoamor', 'conversar'],
   },
   {
     id: 'frustracao',
@@ -122,6 +128,7 @@ export const FERRAMENTAS_COMO_LIDAR = [
       'Ache a próxima ação pequena e concreta. Movimento dissolve frustração parada.',
     ],
     pergunta: 'O que isso ainda pode te ensinar, mesmo doendo agora?',
+    caminhos: ['soltar', 'conversar'],
   },
   {
     id: 'noite',
@@ -132,6 +139,7 @@ export const FERRAMENTAS_COMO_LIDAR = [
       'Respire mais longo na saída do que na entrada. O corpo entende que pode descansar.',
     ],
     pergunta: 'O que pode esperar até amanhã? (Quase tudo.)',
+    caminhos: ['soltar', 'pausa'],
   },
   {
     id: 'reclamar',
@@ -142,6 +150,7 @@ export const FERRAMENTAS_COMO_LIDAR = [
       'Diga, em voz alta, uma coisa boa ligada ao mesmo assunto.',
     ],
     pergunta: 'Que abundância está escondida atrás dessa queixa?',
+    caminhos: ['conversar', 'soltar'],
   },
   {
     id: 'paralisia',
@@ -152,6 +161,7 @@ export const FERRAMENTAS_COMO_LIDAR = [
       'Combine cinco minutos só. Quase sempre o corpo continua sozinho.',
     ],
     pergunta: 'Qual é o menor primeiro passo que você não conseguiria falhar?',
+    caminhos: ['soltar', 'conversar'],
   },
 ];
 

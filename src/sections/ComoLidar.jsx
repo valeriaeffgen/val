@@ -9,7 +9,15 @@ import { gerarFerramenta } from '../lib/val';
  * "surpreenda-me". Quando a situação não está entre elas, a mulher descreve e a
  * Val gera uma ferramenta na hora (seção 7), com cache por similaridade.
  */
-export default function ComoLidar() {
+// Os caminhos de continuidade ao fim de cada ferramenta (rótulos na voz da Val).
+const CAMINHOS = {
+  pausa: { label: 'Respirar um minuto' },
+  conversar: { label: 'Conversar com a Val' },
+  soltar: { label: 'Esvaziar a mente' },
+  autoamor: { label: 'Um gesto por você' },
+};
+
+export default function ComoLidar({ onNavegar, onPausa }) {
   const [abertaId, setAbertaId] = useState(null);
 
   // Geração sob demanda
@@ -77,7 +85,7 @@ export default function ComoLidar() {
           </p>
           <div className="card" style={{ borderTop: '3px solid var(--ambar)' }}>
             <h3 style={{ marginTop: 0 }}>{gerada.situacao}</h3>
-            <Detalhe ferramenta={gerada} />
+            <Detalhe ferramenta={gerada} onNavegar={onNavegar} onPausa={onPausa} />
           </div>
         </div>
       )}
@@ -96,7 +104,7 @@ export default function ComoLidar() {
             >
               <h3 style={{ margin: 0 }}>{f.situacao}</h3>
             </button>
-            {abertaId === f.id && <Detalhe ferramenta={f} />}
+            {abertaId === f.id && <Detalhe ferramenta={f} onNavegar={onNavegar} onPausa={onPausa} />}
           </div>
         ))}
       </div>
@@ -104,8 +112,21 @@ export default function ComoLidar() {
   );
 }
 
-// Diagnóstico + micro-passos + a pergunta.
-function Detalhe({ ferramenta }) {
+// Diagnóstico + micro-passos + a pergunta + 1 a 2 caminhos para continuar.
+function Detalhe({ ferramenta, onNavegar, onPausa }) {
+  // Caminhos válidos (geração ou seed); cai no Conversar se vier vazio.
+  const caminhos = (ferramenta.caminhos || []).filter((c) => CAMINHOS[c]);
+  const lista = caminhos.length ? caminhos : ['conversar'];
+
+  function seguir(c) {
+    if (c === 'pausa') return onPausa?.(ferramenta.pergunta);
+    if (c === 'conversar') {
+      const msg = `Estou lidando com ${String(ferramenta.situacao).toLowerCase()}. Fiquei pensando: ${ferramenta.pergunta}`;
+      return onNavegar?.({ secao: 'conversar', mensagem: msg });
+    }
+    onNavegar?.({ secao: c });
+  }
+
   return (
     <div style={{ marginTop: 'var(--espaco-2)' }}>
       <p style={{ margin: '0 0 var(--espaco-2)' }}>{ferramenta.diagnostico}</p>
@@ -117,6 +138,14 @@ function Detalhe({ ferramenta }) {
       <p style={{ fontFamily: 'var(--fonte-titulo)', fontStyle: 'italic', fontSize: 'var(--titulo-sm)', color: 'var(--verde-petroleo)', margin: 0 }}>
         {ferramenta.pergunta}
       </p>
+
+      <div style={{ display: 'flex', gap: 'var(--espaco-1)', flexWrap: 'wrap', marginTop: 'var(--espaco-3)' }}>
+        {lista.map((c, i) => (
+          <button key={c} className={i === 0 ? 'botao' : 'botao-suave'} onClick={() => seguir(c)}>
+            {CAMINHOS[c].label}
+          </button>
+        ))}
+      </div>
     </div>
   );
 }

@@ -43,8 +43,15 @@ Crie UMA ferramenta para esse momento, na voz da Val. Responda APENAS com um JSO
   "situacao": "<título curto da situação, de 1 a 4 palavras>",
   "diagnostico": "<2 a 3 frases que nomeiam o que está acontecendo, com lucidez e ternura, sem julgar>",
   "passos": ["<micro-passo concreto e pequeno>", "<micro-passo>", "<terceiro, opcional>"],
-  "pergunta": "<uma pergunta de perspectiva que faça ela enxergar sozinha>"
+  "pergunta": "<uma pergunta de perspectiva que faça ela enxergar sozinha>",
+  "caminhos": ["<1 ou 2 dentre: conversar, soltar, autoamor, pausa>"]
 }
+
+Os "caminhos" são para onde ela pode seguir depois da ferramenta. Escolha 1 ou 2 mais apropriados à situação, NÃO todos:
+- "conversar": quando ajuda levar a questão para a Val continuar junto.
+- "soltar": quando o que pesa é mental e insiste, e ela precisa esvaziar a cabeça.
+- "autoamor": quando o tema é se cobrar, se culpar, se acolher, se tratar com gentileza.
+- "pausa": quando o corpo precisa respirar antes de pensar.
 
 Regras: micro-passos pequenos e factíveis agora. No máximo uma pergunta. Sem travessão, escreva encadeado com vírgula. Sem aforismo, sem frase-de-efeito, concretude.
 
@@ -120,6 +127,11 @@ Deno.serve(async (req) => {
     if (!ferramenta?.situacao || !ferramenta?.diagnostico || !Array.isArray(ferramenta?.passos) || !ferramenta?.pergunta) {
       return json({ erro: "formato" }, 502);
     }
+    // Sanea os caminhos: só os válidos, no máximo 2; cai no Conversar se vazio.
+    const validos = ["conversar", "soltar", "autoamor", "pausa"];
+    let caminhos = Array.isArray(ferramenta.caminhos) ? ferramenta.caminhos.filter((c: any) => validos.includes(c)) : [];
+    if (caminhos.length === 0) caminhos = ["conversar"];
+    ferramenta.caminhos = caminhos.slice(0, 2);
 
     // Guarda no acervo gerado, com o embedding, para servir as próximas mulheres.
     await admin.from("conteudo_gerado").insert({
