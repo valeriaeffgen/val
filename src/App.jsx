@@ -1,32 +1,55 @@
 import { useState, useEffect } from 'react';
 import Nav from './components/Nav';
 import Limiar from './sections/Limiar';
+import CapturaSaida from './components/CapturaSaida';
 import { SECOES } from './sections';
 import { db, iniciarSessao } from './lib/db';
 
 /*
  * Casca do app. Fluxo (seção 6):
- *   chegada (Limiar) → navegação pelas seções → rodapé (vídeos, encerrar visita).
+ *   chegada (Limiar) → navegação pelas seções → captura de saída → rodapé.
  *
- * Roteamento mínimo por estado — sem dependência de router por enquanto;
- * a estrutura está pronta para crescer.
+ * A sessão da visita é aberta na chegada (entrada) e fechada na saída
+ * (saida), formando o arco entrada→saída que alimenta a Trajetória.
  */
 export default function App() {
   const [chegada, setChegada] = useState(null); // estado de chegada da visita
   const [secaoId, setSecaoId] = useState(null);
+  const [sessaoId, setSessaoId] = useState(null); // id da sessão desta visita
+  const [saindo, setSaindo] = useState(false); // mostrando a captura de saída
 
-  // Abre a sessão (anônima) cedo, quando há Supabase — sem muro de cadastro.
+  // Abre a sessão (anônima) cedo, quando há Supabase, sem muro de cadastro.
   useEffect(() => { iniciarSessao(); }, []);
 
-  // Limiar: registra como ela chega e abre uma sessão da Trajetória.
-  function aoChegar(estado) {
+  // Limiar: registra como ela chega e abre a sessão desta visita.
+  async function aoChegar(estado) {
     setChegada(estado);
-    db.registrarSessao({ entrada: estado.id }).catch(() => {});
     setSecaoId('conversar'); // do socorro imediato em diante
+    const sessao = await db.registrarSessao({ entrada: estado.id }).catch(() => null);
+    setSessaoId(sessao?.id ?? null);
+  }
+
+  function encerrarVisita() {
+    setSaindo(false);
+    setChegada(null);
+    setSecaoId(null);
+    setSessaoId(null);
+  }
+
+  // Captura de saída: grava a saída na MESMA sessão (entrada→saída).
+  async function aoSair(estado) {
+    if (sessaoId) {
+      await db.atualizar('sessoes', sessaoId, { saida: estado.id }).catch(() => {});
+    }
+    encerrarVisita();
   }
 
   if (!chegada) {
     return <Limiar onChegada={aoChegar} />;
+  }
+
+  if (saindo) {
+    return <CapturaSaida onResponder={aoSair} onPular={encerrarVisita} />;
   }
 
   const secao = SECOES.find((s) => s.id === secaoId);
@@ -41,15 +64,7 @@ export default function App() {
 
       {/* Rodapé: vídeos e "encerrar visita" (seção 6). */}
       <footer style={{ borderTop: '1px solid var(--linha)', padding: 'var(--espaco-3)', textAlign: 'center' }}>
-        <button
-          className="botao-suave"
-          onClick={() => {
-            // Captura de saída (entrada→saída) alimenta a Trajetória (seção 6).
-            db.registrarSessao({ entrada: chegada.id, saida: chegada.id }).catch(() => {});
-            setChegada(null);
-            setSecaoId(null);
-          }}
-        >
+        <button className="botao-suave" onClick={() => setSaindo(true)}>
           Encerrar visita
         </button>
       </footer>
