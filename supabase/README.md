@@ -120,7 +120,7 @@ volta para o app.
 
 ```sql
 insert into curadoras (user_id)
-select id from auth.users where email = 'voamulher2025@gmail.com'
+select id from auth.users where email = 'valeriaeffgen@outlook.com'
 on conflict do nothing;
 ```
 
