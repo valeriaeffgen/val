@@ -22,3 +22,16 @@ export async function conversarComVal(mensagens, chegada) {
   if (data?.erro) throw new Error(data.erro);
   return data?.texto ?? '';
 }
+
+/*
+ * "A palavra de hoje" do Autoamor — gerada na voz da Val, com cache no backend
+ * (uma por dia, reaproveitada). Ver supabase/functions/palavra.
+ */
+export async function palavraDeHoje() {
+  if (!hasSupabase) throw new Error('sem-backend');
+  const day = new Date().toISOString().slice(0, 10);
+  const { data, error } = await supabase.functions.invoke('palavra', { body: { day } });
+  if (error) throw error;
+  if (data?.erro) throw new Error(data.erro);
+  return data?.texto ?? '';
+}

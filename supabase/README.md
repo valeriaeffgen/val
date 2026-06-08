@@ -84,3 +84,18 @@ Edge — não precisa configurá-los. A função usa o token da sessão (anônim
 quem chama, então lê os dados sob a RLS correta.
 
 Modelo usado: `claude-opus-4-8`. Para trocar, edite `functions/conversar/index.ts`.
+
+### A palavra de hoje — função Edge `palavra`
+
+O Autoamor gera "a palavra de hoje" pela função `functions/palavra`, com **cache
+primeiro** (regra 2): uma palavra por dia, guardada em `conteudo_gerado` e
+reaproveitada — não regera o que já existe. Publique do mesmo jeito:
+
+```bash
+supabase functions deploy palavra
+# ou, de uma vez, todas: supabase functions deploy
+```
+
+Pelo painel: **Edge Functions → Create a function** → nome `palavra` → cole o
+conteúdo de `functions/palavra/index.ts` → Deploy. A mesma `ANTHROPIC_API_KEY`
+serve as duas funções.

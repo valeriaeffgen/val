@@ -13,7 +13,7 @@
 #
 # A ANTHROPIC_API_KEY NÃO entra aqui — ela já é segredo do projeto no Supabase.
 
-name: Publicar função conversar
+name: Publicar funções Edge
 
 on:
   push:
@@ -35,5 +35,5 @@ jobs:
         with:
           version: latest
 
-      - name: Publicar a função (verify_jwt ligado)
-        run: supabase functions deploy conversar --project-ref "$PROJECT_REF"
+      - name: Publicar todas as funções (verify_jwt ligado)
+        run: supabase functions deploy --project-ref "$PROJECT_REF"
