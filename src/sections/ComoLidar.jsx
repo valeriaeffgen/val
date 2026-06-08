@@ -44,7 +44,7 @@ function Ferramenta({ ferramenta, aberta, onAbrir }) {
         aria-expanded={aberta}
         style={{ background: 'none', border: 'none', padding: 0, width: '100%', textAlign: 'left', cursor: 'pointer' }}
       >
-        <h3 style={{ margin: 0 }}>{ferramenta.titulo}</h3>
+        <h3 style={{ margin: 0 }}>{ferramenta.situacao}</h3>
       </button>
 
       {aberta && (
