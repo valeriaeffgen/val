@@ -63,3 +63,24 @@ prompt.
 ```sql
 insert into curadoras (user_id) values ('<uuid-da-valeria>');
 ```
+
+## A voz da Val — função Edge `conversar`
+
+A seção Conversar fala com a Claude através de uma função Edge (`functions/conversar`),
+para que a chave da Anthropic **nunca** apareça no frontend. A função injeta a
+Constituição no system prompt e puxa o contexto pessoal da mulher do banco, sob
+a RLS dela.
+
+```bash
+# 1. Guardar a chave da Anthropic como segredo da função (não vai no .env do frontend)
+supabase secrets set ANTHROPIC_API_KEY=sk-ant-...
+
+# 2. Publicar a função
+supabase functions deploy conversar
+```
+
+`SUPABASE_URL` e `SUPABASE_ANON_KEY` já são injetados automaticamente nas funções
+Edge — não precisa configurá-los. A função usa o token da sessão (anônima) de
+quem chama, então lê os dados sob a RLS correta.
+
+Modelo usado: `claude-opus-4-8`. Para trocar, edite `functions/conversar/index.ts`.

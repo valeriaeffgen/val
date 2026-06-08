@@ -37,6 +37,7 @@ src/
   lib/
     constitution.js     a Constituição como system prompt da camada generativa
     voice.js            guardião do léxico proibido (rede de segurança)
+    val.js              ponte do frontend para a voz da Val (função Edge)
     db.js               fachada de dados async (escolhe Supabase ou localStorage)
     supabase.js         cliente Supabase + sessão anônima
     storage.js          adaptador local (localStorage), fallback offline
@@ -48,8 +49,18 @@ src/
     seed.js             conteúdo-semente (seção 7: semente, não teto)
 supabase/
   migrations/0001_init.sql   schema (seção 10) + RLS + camada generativa
-  README.md                  como aplicar o schema e configurar o ambiente
+  functions/conversar/       função Edge: a voz da Val (Claude + Constituição)
+  README.md                  como aplicar o schema, a função e o ambiente
 ```
+
+## A voz da Val
+
+A seção **Conversar** fala com a Claude (`claude-opus-4-8`) através da função
+Edge `supabase/functions/conversar` — assim a chave da Anthropic **nunca** fica
+no frontend. A função injeta a Constituição no system prompt (seção 7, regra 1)
+e puxa o contexto pessoal da mulher sob RLS (regra 3). Deploy e segredo em
+[`supabase/README.md`](./supabase/README.md). Sem a função publicada, a seção
+mostra um aviso sereno em vez de responder.
 
 ## Dados
 
