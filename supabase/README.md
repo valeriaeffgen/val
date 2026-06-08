@@ -99,3 +99,26 @@ supabase functions deploy palavra
 Pelo painel: **Edge Functions → Create a function** → nome `palavra` → cole o
 conteúdo de `functions/palavra/index.ts` → Deploy. A mesma `ANTHROPIC_API_KEY`
 serve as duas funções.
+
+## As Cartas e a caixa da Valéria (seção 8)
+
+A mulher escreve em `Cartas` (grava em `cartas` sob a RLS dela). A Valéria lê e
+responde na **caixa de entrada**, acessível por `https://SEU-APP/?caixa`,
+protegida por login de e-mail e pela tabela `curadoras`.
+
+**1. Permitir o login da caixa (uma vez):** Supabase → **Authentication → URL
+Configuration** → adicione o domínio do app em **Site URL** e em **Redirect
+URLs** (ex.: `https://val-one-gold.vercel.app/**`). Sem isso, o link mágico não
+volta para o app.
+
+**2. Tornar a Valéria curadora (uma vez, depois do primeiro login por e-mail):**
+
+```sql
+insert into curadoras (user_id)
+select id from auth.users where email = 'voamulher2025@gmail.com'
+on conflict do nothing;
+```
+
+A partir daí, `/?caixa` mostra as cartas que chegaram, com um campo para
+responder. Responder grava `resposta`, `status='respondida'` e `respondida_em`;
+a mulher passa a ver a resposta nas "Nossas cartas".

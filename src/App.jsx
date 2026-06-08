@@ -5,9 +5,13 @@ import Chegada from './components/Chegada';
 import Pausa from './components/Pausa';
 import CapturaSaida from './components/CapturaSaida';
 import Videos from './sections/Videos';
+import Caixa from './sections/Caixa';
 import { SECOES } from './sections';
 import { db, iniciarSessao } from './lib/db';
 import { PAUSA_PERGUNTAS } from './data/seed';
+
+// Caixa de entrada da Valéria: acessível por /?caixa (sem login anônimo).
+const MODO_CAIXA = typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('caixa');
 
 // Sorteia n itens de um array (para os elevadores na chegada).
 function pick(arr, n) {
@@ -79,7 +83,7 @@ export default function App() {
   const [mensagemInicial, setMensagemInicial] = useState(null);
   const [diarioCat, setDiarioCat] = useState(null);
 
-  useEffect(() => { iniciarSessao(); }, []);
+  useEffect(() => { if (!MODO_CAIXA) iniciarSessao(); }, []);
 
   async function aoChegar(vibeId) {
     setEntrou(true);
@@ -137,6 +141,10 @@ export default function App() {
     setSessaoId(null);
     setMensagemInicial(null);
     setDiarioCat(null);
+  }
+
+  if (MODO_CAIXA) {
+    return <Caixa />;
   }
 
   if (!entrou) {
