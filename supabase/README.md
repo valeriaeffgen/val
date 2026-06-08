@@ -9,6 +9,9 @@ tabelas reais, com `user_id` em tudo e RLS protegendo a história de cada mulher
 cole o conteúdo de [`migrations/0001_init.sql`](./migrations/0001_init.sql) →
 _Run_.
 
+Aplique também `migrations/0002_ferramentas_geradas.sql` (habilita `pgvector`,
+o embedding e a busca por similaridade do cache do Como lidar).
+
 **Pela CLI:**
 
 ```bash

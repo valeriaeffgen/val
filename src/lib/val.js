@@ -49,3 +49,15 @@ export async function espelhoDaJornada({ jornadaId, titulo, perguntas, respostas
   if (data?.erro) throw new Error(data.erro);
   return data?.texto ?? '';
 }
+
+/*
+ * Ferramenta sob demanda do Como lidar — gera (ou reaproveita por similaridade,
+ * regra 2) uma ferramenta para a situação buscada. Ver supabase/functions/ferramenta.
+ */
+export async function gerarFerramenta(situacao) {
+  if (!hasSupabase) throw new Error('sem-backend');
+  const { data, error } = await supabase.functions.invoke('ferramenta', { body: { situacao } });
+  if (error) throw error;
+  if (data?.erro) throw new Error(data.erro);
+  return { ferramenta: data.ferramenta, cache: data.cache };
+}
