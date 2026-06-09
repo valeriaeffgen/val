@@ -17,7 +17,7 @@ const CAMINHOS = {
   autoamor: { label: 'Um gesto por você' },
 };
 
-export default function ComoLidar({ onNavegar, onPausa }) {
+export default function ComoLidar({ onNavegar, onPausa, onGratidao }) {
   const [abertaId, setAbertaId] = useState(null);
 
   // Geração sob demanda
@@ -32,7 +32,12 @@ export default function ComoLidar({ onNavegar, onPausa }) {
   useEffect(() => { ferramentasOficiais().then(setOficiais).catch(() => {}); }, []);
 
   function alternar(id) {
-    setAbertaId((atual) => (atual === id ? null : id));
+    setAbertaId((atual) => {
+      const novo = atual === id ? null : id;
+      // Gatilho de gratidão: ao abrir "vontade de reclamar".
+      if (novo === 'reclamar') onGratidao?.();
+      return novo;
+    });
   }
 
   function surpreender() {

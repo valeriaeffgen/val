@@ -31,6 +31,7 @@ export const PAUSA_PERGUNTAS = [
 // Categorias do Diário (seção 6) — do protótipo da Valéria. Gratidão/perspectiva
 // + os rituais (elogio, autoamor). label aparece na interface; hint orienta.
 export const CATEGORIAS_DIARIO = [
+  { id: 'gratidao', label: 'Gratidão', hint: 'um motivo simples, do tamanho do dia' },
   { id: 'pessoas', label: 'Luz em alguém', hint: 'pontos positivos das pessoas do meu convívio' },
   { id: 'recebido', label: 'Fizeram por mim', hint: 'algo bom que alguém fez pra mim' },
   { id: 'dado', label: 'Eu fiz por alguém', hint: 'algo bom que eu fiz por alguém' },
@@ -238,3 +239,14 @@ export const TIPOS_PROSPERIDADE = {
   abundancia: 'Abundância que você já tem',
   preco: 'Sobre o que você cobra',
 };
+
+// Gratidão (comportamento transversal): quando a mulher não acha um motivo, a
+// Val oferece o óbvio que se esquece, concreto e humilde. NUNCA abstrato.
+export const GRATIDAO_SUGESTOES = [
+  'Você está respirando agora.',
+  'Alguém pensou em você hoje.',
+  'Você tem com que se manter atualizada.',
+  'Tem água limpa quando você abre a torneira.',
+  'Seus olhos estão lendo isto.',
+  'Você acordou numa cama hoje.',
+];

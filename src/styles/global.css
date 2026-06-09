@@ -134,6 +134,10 @@ input {
   padding: 12px 22px;
 }
 
+/* Entrada suave (ex.: o convite de gratidão), só opacidade para não mexer no posicionamento */
+@keyframes val-fade-in-op { from { opacity: 0; } to { opacity: 1; } }
+.val-fade-in { animation: val-fade-in-op 0.4s ease both; }
+
 /* Respiração da Pausa */
 @keyframes val-respira {
   0%, 100% { transform: scale(0.82); opacity: 0.65; }

@@ -7,6 +7,7 @@ import CapturaSaida from './components/CapturaSaida';
 import Videos from './sections/Videos';
 import Caixa from './sections/Caixa';
 import Entrada from './sections/Entrada';
+import ConviteGratidao from './components/ConviteGratidao';
 import { SECOES } from './sections';
 import { db } from './lib/db';
 import { supabase, hasSupabase } from './lib/supabase';
@@ -14,6 +15,18 @@ import { PAUSA_PERGUNTAS } from './data/seed';
 
 // Caixa de entrada da Valéria: acessível por /?caixa (sem login anônimo).
 const MODO_CAIXA = typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('caixa');
+
+// Gratidão é transversal e CONVITE, nunca cobrança. O cooldown evita cansar:
+// os convites "do nada" respeitam um intervalo; os gatilhos (pesada, reclamar)
+// podem forçar. Dispensar não deixa rastro de culpa, só agenda o próximo.
+const GRAT_KEY = 'val.gratidao.ultimo';
+const GRAT_GAP = 1000 * 60 * 25;
+function podeConvidarGratidao() {
+  try { return Date.now() - Number(localStorage.getItem(GRAT_KEY) || 0) > GRAT_GAP; } catch { return true; }
+}
+function marcarConviteGratidao() {
+  try { localStorage.setItem(GRAT_KEY, String(Date.now())); } catch { /* ignore */ }
+}
 
 // Sorteia n itens de um array (para os elevadores na chegada).
 function pick(arr, n) {
@@ -84,6 +97,17 @@ export default function App() {
   const [pausaQ, setPausaQ] = useState(PAUSA_PERGUNTAS[0]);
   const [mensagemInicial, setMensagemInicial] = useState(null);
   const [diarioCat, setDiarioCat] = useState(null);
+  const [gratidao, setGratidao] = useState(false);
+
+  function convidarGratidao(forcar = false) {
+    if (gratidao) return;
+    if (!forcar && !podeConvidarGratidao()) return;
+    setGratidao(true);
+  }
+  function fecharGratidao() {
+    marcarConviteGratidao();
+    setGratidao(false);
+  }
 
   // Autenticação por e-mail: a sessão decide se mostramos a Entrada ou o app.
   const [authCarregando, setAuthCarregando] = useState(hasSupabase);
@@ -110,6 +134,8 @@ export default function App() {
     const perfil = await db.perfil().catch(() => ({ elevadores: [] }));
     const palavras = await db.listar('palavras').catch(() => []);
     setResposta(montarResposta(vibeId, perfil?.elevadores ?? [], palavras));
+    // Gatilho: chegar pesada é um momento de gratidão. Convite, nunca cobrança.
+    if (vibeId === 'pesada') convidarGratidao(true);
   }
 
   function aoPular() {
@@ -130,6 +156,8 @@ export default function App() {
     setMensagemInicial(mensagem);
     setDiarioCat(cat);
     setSecaoId(secao);
+    // "Do nada": de vez em quando, no meio do uso (o cooldown segura a frequência).
+    if (Math.random() < 0.15) convidarGratidao();
   }
 
   function onAcao(a) {
@@ -207,6 +235,7 @@ export default function App() {
             catInicial={diarioCat}
             onNavegar={navegar}
             onPausa={abrirPausa}
+            onGratidao={() => convidarGratidao(true)}
             sessao={sessao}
           />
         ) : null}
@@ -217,6 +246,8 @@ export default function App() {
         <button className="botao-suave" onClick={() => { setResposta(null); setSecaoId('videos'); }}>Vídeos</button>
         <button className="botao-suave" onClick={() => setSaindo(true)}>Encerrar visita</button>
       </footer>
+
+      {gratidao && <ConviteGratidao onFechar={fecharGratidao} />}
     </div>
   );
 }
