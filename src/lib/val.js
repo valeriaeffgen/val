@@ -37,6 +37,20 @@ export async function palavraDeHoje() {
 }
 
 /*
+ * Prosperidade (camada 1: Consciência) — uma pergunta contemplativa gerada na
+ * voz da Val a partir do contexto dela, com cache (uma por dia). Ver
+ * supabase/functions/prosperidade.
+ */
+export async function perguntaProsperidade() {
+  if (!hasSupabase) throw new Error('sem-backend');
+  const day = new Date().toISOString().slice(0, 10);
+  const { data, error } = await supabase.functions.invoke('prosperidade', { body: { day } });
+  if (error) throw error;
+  if (data?.erro) throw new Error(data.erro);
+  return data?.texto ?? '';
+}
+
+/*
  * "O espelho" do Olhar pra dentro — devolutiva gerada das respostas dela à
  * jornada, com cache (regra 2). Ver supabase/functions/espelho.
  */

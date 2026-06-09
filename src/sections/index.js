@@ -8,6 +8,7 @@ import ComoLidar from './ComoLidar';
 import Soltar from './Soltar';
 import OlharPraDentro from './OlharPraDentro';
 import Autoamor from './Autoamor';
+import Prosperidade from './Prosperidade';
 import Diario from './Diario';
 import Cartas from './Cartas';
 import Trajetoria from './Trajetoria';
@@ -19,6 +20,7 @@ export const SECOES = [
   { id: 'soltar', rotulo: 'Soltar', Componente: Soltar },
   { id: 'olhar-pra-dentro', rotulo: 'Olhar pra dentro', Componente: OlharPraDentro },
   { id: 'autoamor', rotulo: 'Autoamor', Componente: Autoamor },
+  { id: 'prosperidade', rotulo: 'Prosperidade', Componente: Prosperidade },
   { id: 'diario', rotulo: 'Diário', Componente: Diario },
   { id: 'cartas', rotulo: 'Cartas', Componente: Cartas },
   { id: 'trajetoria', rotulo: 'Trajetória', Componente: Trajetoria },

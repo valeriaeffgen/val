@@ -209,3 +209,23 @@ export const VIDEOS_DEMO = [
   { titulo: 'O futuro não está aqui', dur: '5 min', tipo: 'Explicação', desc: 'Como o medo do futuro funciona, e o caminho de volta ao presente.' },
   { titulo: 'Você não é o que produz', dur: '6 min', tipo: 'Explicação', desc: 'Separar valor de produtividade, na prática.' },
 ];
+
+// Prosperidade (camada 1: Consciência). Núcleo de sementes validadas da Valéria.
+// Reconhecer abundância real, nunca lei da atração. A geração expande a partir
+// daqui, na voz da Val, com o contexto da mulher (ver functions/prosperidade).
+export const CONSCIENCIA_SEMENTES = [
+  'O que você tem hoje que um dia foi só um desejo?',
+  'Que conhecimento você domina e nunca cobrou por ele?',
+  'Que oportunidade você recusou achando que não era pra você?',
+  'O que você faz com naturalidade e já ouviram elogiar como raro?',
+];
+
+// Prosperidade (camada 2): micro-exercícios práticos de ~2 minutos, um por vez,
+// leves, sem dever de casa. Ancorados no concreto.
+export const MICRO_EXERCICIOS = [
+  'Nomeie agora um recurso seu que está parado.',
+  'Que preço você cobra com culpa?',
+  'Pense numa coisa que você sabe fazer e que pouca gente sabe. Diga em voz alta qual é.',
+  'Escolha uma habilidade sua que você nunca ofereceu a ninguém. Por que não?',
+  'Aponte uma coisa concreta que você conquistou e já nem repara que tem.',
+];
