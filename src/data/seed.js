@@ -221,11 +221,20 @@ export const CONSCIENCIA_SEMENTES = [
 ];
 
 // Prosperidade (camada 2): micro-exercícios práticos de ~2 minutos, um por vez,
-// leves, sem dever de casa. Ancorados no concreto.
+// leves, sem dever de casa. Cada um tem um tipo, que separa o acervo.
 export const MICRO_EXERCICIOS = [
-  'Nomeie agora um recurso seu que está parado.',
-  'Que preço você cobra com culpa?',
-  'Pense numa coisa que você sabe fazer e que pouca gente sabe. Diga em voz alta qual é.',
-  'Escolha uma habilidade sua que você nunca ofereceu a ninguém. Por que não?',
-  'Aponte uma coisa concreta que você conquistou e já nem repara que tem.',
+  { texto: 'Nomeie agora um recurso seu que está parado.', tipo: 'recurso' },
+  { texto: 'Que preço você cobra com culpa?', tipo: 'preco' },
+  { texto: 'Pense numa coisa que você sabe fazer e que pouca gente sabe. Diga em voz alta qual é.', tipo: 'habilidade' },
+  { texto: 'Escolha uma habilidade sua que você nunca ofereceu a ninguém. Por que não?', tipo: 'habilidade' },
+  { texto: 'Aponte uma coisa concreta que você conquistou e já nem repara que tem.', tipo: 'abundancia' },
 ];
+
+// Rótulos do acervo da Prosperidade, por tipo.
+export const TIPOS_PROSPERIDADE = {
+  consciencia: 'O que você enxergou',
+  recurso: 'Recursos parados',
+  habilidade: 'Habilidades suas',
+  abundancia: 'Abundância que você já tem',
+  preco: 'Sobre o que você cobra',
+};
