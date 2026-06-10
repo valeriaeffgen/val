@@ -245,7 +245,7 @@ export default function App() {
   const secao = SECOES.find((s) => s.id === secaoId);
 
   return (
-    <div style={{ minHeight: '100%', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ minHeight: '100%', display: 'flex', flexDirection: 'column', paddingBottom: 56 }}>
       <Nav atual={secaoId} onIr={(id) => { setResposta(null); if (id) setSecaoId(id); else { setEntrou(false); setVibe(null); } }} />
 
       {pausa && <Pausa pergunta={pausaQ} onFechar={() => setPausa(false)} />}
