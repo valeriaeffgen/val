@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import OfertaMuralGratidao from './OfertaMuralGratidao';
 
 /*
  * Painel de chegada por estado (do protótipo). Depois do Limiar, a Val adapta a
@@ -6,7 +7,7 @@ import { useState } from 'react';
  * agitada recebe chão; neutra um convite suave; elevada é convidada a ancorar a
  * fórmula. Conteúdo (frase, sub, elevadores, palavra, ações) vem pronto do App.
  */
-export default function Chegada({ resposta, onAcao, onAncorar }) {
+export default function Chegada({ resposta, onAcao, onAncorar, onNavegar }) {
   const [elev, setElev] = useState('');
   if (!resposta) return null;
 
@@ -67,6 +68,9 @@ export default function Chegada({ resposta, onAcao, onAncorar }) {
           </button>
         ))}
       </div>
+
+      {/* Chegar pesada: oferecer reler a gratidão (alívio, só se houver motivos) */}
+      {resposta.oferecerGratidao && <OfertaMuralGratidao onNavegar={onNavegar} />}
     </section>
   );
 }

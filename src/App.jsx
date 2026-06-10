@@ -5,6 +5,7 @@ import Chegada from './components/Chegada';
 import Pausa from './components/Pausa';
 import CapturaSaida from './components/CapturaSaida';
 import Videos from './sections/Videos';
+import Mural from './sections/Mural';
 import Caixa from './sections/Caixa';
 import Entrada from './sections/Entrada';
 import ConviteGratidao from './components/ConviteGratidao';
@@ -45,6 +46,7 @@ function montarResposta(vibe, elevadores, palavras) {
       sub: 'Nada pra resolver agora. Só subir um degrau.',
       elevadores: pick(elevadores, 2),
       palavra,
+      oferecerGratidao: true, // chegar pesada: oferecer reler a gratidão (alívio)
       acoes: [
         { label: 'Pausa de 1 minuto', tipo: 'pausa' },
         { label: 'Ver o que já é', tipo: 'secao', secao: 'meu-centro' },
@@ -113,7 +115,7 @@ export default function App() {
   // (respeitando o cooldown), e depois é probabilístico. Cobre tanto o menu
   // quanto os caminhos, já que ambos mudam secaoId.
   useEffect(() => {
-    if (!secaoId) return;
+    if (!secaoId || secaoId === 'mural' || secaoId === 'videos') return;
     const primeira = primeiraSecao.current;
     primeiraSecao.current = false;
     if (primeira || Math.random() < 0.25) convidarGratidao();
@@ -233,9 +235,11 @@ export default function App() {
 
       <main style={{ flex: 1, width: '100%' }}>
         {resposta ? (
-          <Chegada resposta={resposta} onAcao={onAcao} onAncorar={ancorar} />
+          <Chegada resposta={resposta} onAcao={onAcao} onAncorar={ancorar} onNavegar={navegar} />
         ) : secaoId === 'videos' ? (
           <Videos />
+        ) : secaoId === 'mural' ? (
+          <Mural onNavegar={navegar} />
         ) : secao ? (
           <secao.Componente
             chegada={vibe ? { id: vibe } : null}

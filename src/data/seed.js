@@ -85,6 +85,7 @@ export const FERRAMENTAS_COMO_LIDAR = [
     ],
     pergunta: 'A inveja é um mapa. O que ela está te mostrando que você quer de verdade?',
     caminhos: ['conversar', 'autoamor'],
+    oferecerGratidao: true,
   },
   {
     id: 'excesso',
@@ -130,6 +131,7 @@ export const FERRAMENTAS_COMO_LIDAR = [
     ],
     pergunta: 'O que isso ainda pode te ensinar, mesmo doendo agora?',
     caminhos: ['soltar', 'conversar'],
+    oferecerGratidao: true,
   },
   {
     id: 'noite',
@@ -152,6 +154,7 @@ export const FERRAMENTAS_COMO_LIDAR = [
     ],
     pergunta: 'Que abundância está escondida atrás dessa queixa?',
     caminhos: ['conversar', 'soltar'],
+    oferecerGratidao: true,
   },
   {
     id: 'paralisia',

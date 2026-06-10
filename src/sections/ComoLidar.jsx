@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import Secao from '../components/Secao';
+import OfertaMuralGratidao from '../components/OfertaMuralGratidao';
 import { FERRAMENTAS_COMO_LIDAR } from '../data/seed';
 import { gerarFerramenta, marcarUtil, ferramentasOficiais } from '../lib/val';
 
@@ -195,6 +196,9 @@ function Detalhe({ ferramenta, onNavegar, onPausa }) {
           </button>
         ))}
       </div>
+
+      {/* Espiral (comparação, frustração, reclamar): oferecer reler a gratidão */}
+      {ferramenta.oferecerGratidao && <OfertaMuralGratidao onNavegar={onNavegar} />}
     </div>
   );
 }

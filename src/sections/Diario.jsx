@@ -16,9 +16,14 @@ import { CATEGORIAS_DIARIO } from '../data/seed';
 const CATEGORIAS = CATEGORIAS_DIARIO.filter((c) => c.id !== 'elogio' && c.id !== 'autoamor');
 const LABEL = Object.fromEntries(CATEGORIAS_DIARIO.map((c) => [c.id, c.label]));
 
-export default function Diario({ catInicial }) {
+export default function Diario({ catInicial, onNavegar }) {
   return (
     <Secao titulo="Diário" abertura="o que vale guardar do dia, pra reler num dia cinza">
+      <div style={{ marginBottom: 'var(--espaco-3)' }}>
+        <button className="botao-suave" onClick={() => onNavegar?.({ secao: 'mural' })}>
+          reler minha gratidão
+        </button>
+      </div>
       <Elogios />
       <GestoAutoamor />
       <Categorias catInicial={catInicial} />
