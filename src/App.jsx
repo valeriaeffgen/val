@@ -9,9 +9,11 @@ import Videos from './sections/Videos';
 import Mural from './sections/Mural';
 import Caixa from './sections/Caixa';
 import Entrada from './sections/Entrada';
+import Politica from './sections/Politica';
 import GratidaoWidget from './components/GratidaoWidget';
 import { SECOES } from './sections';
 import { db } from './lib/db';
+import { registrarConsentimento } from './lib/consent';
 import { supabase, hasSupabase } from './lib/supabase';
 import { PAUSA_PERGUNTAS } from './data/seed';
 
@@ -145,6 +147,11 @@ export default function App() {
     return () => sub.subscription.unsubscribe();
   }, []);
 
+  // Com sessão viva, grava a prova do consentimento (LGPD), uma vez por versão.
+  useEffect(() => {
+    if (sessao) registrarConsentimento();
+  }, [sessao]);
+
   async function aoChegar(vibeId) {
     setEntrou(true);
     setVibe(vibeId);
@@ -257,6 +264,8 @@ export default function App() {
           <Videos />
         ) : secaoId === 'mural' ? (
           <Mural onNavegar={navegar} />
+        ) : secaoId === 'politica' ? (
+          <Politica onVoltar={() => setSecaoId('meu-centro')} />
         ) : secao ? (
           <secao.Componente
             chegada={vibe ? { id: vibe } : null}
@@ -274,6 +283,7 @@ export default function App() {
       {/* Rodapé: vídeos e "encerrar visita" (seção 6). */}
       <footer style={{ borderTop: '1px solid var(--linha)', padding: 'var(--espaco-3)', textAlign: 'center', display: 'flex', gap: 'var(--espaco-2)', justifyContent: 'center', flexWrap: 'wrap' }}>
         <button className="botao-suave" onClick={() => { setResposta(null); setSecaoId('videos'); }}>Vídeos</button>
+        <button className="botao-suave" onClick={() => { setResposta(null); setSecaoId('politica'); }}>Privacidade</button>
         <button className="botao-suave" onClick={() => setSaindo(true)}>Encerrar visita</button>
       </footer>
 

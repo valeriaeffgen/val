@@ -3,6 +3,7 @@ import Secao from '../components/Secao';
 import { db } from '../lib/db';
 import { usePerfil } from '../lib/useColecao';
 import { vincularEmail, sair } from '../lib/supabase';
+import { exportarRegistros } from '../lib/exportar';
 
 /*
  * Meu Centro (seção 6) — valores, o que já é (conquistas), o que importa agora
@@ -16,7 +17,7 @@ const CAMPOS = [
   { chave: 'elevadores', titulo: 'Meus elevadores', dica: 'o que comprovadamente me sobe' },
 ];
 
-export default function MeuCentro({ sessao }) {
+export default function MeuCentro({ sessao, onNavegar }) {
   const perfil = usePerfil();
 
   function adicionar(chave, valor) {
@@ -59,7 +60,56 @@ export default function MeuCentro({ sessao }) {
           </div>
         ))}
       </div>
+
+      <Privacidade onNavegar={onNavegar} />
     </Secao>
+  );
+}
+
+// Sua privacidade (LGPD): exportar tudo, ler a política, e como apagar.
+function Privacidade({ onNavegar }) {
+  const [estado, setEstado] = useState('inicio'); // inicio | exportando | feito | erro
+
+  async function exportar() {
+    setEstado('exportando');
+    try {
+      await exportarRegistros();
+      setEstado('feito');
+    } catch {
+      setEstado('erro');
+    }
+  }
+
+  return (
+    <div className="card" style={{ marginTop: 'var(--espaco-3)' }}>
+      <h3 style={{ marginTop: 0 }}>Sua privacidade</h3>
+      <p style={{ color: 'var(--tinta-suave)', marginTop: 0, fontSize: 'var(--corpo-pequeno)' }}>
+        A sua história é sua. Leve uma cópia, ou apague tudo, quando quiser.
+      </p>
+      <div style={{ display: 'flex', gap: 'var(--espaco-1)', flexWrap: 'wrap', alignItems: 'center' }}>
+        <button className="botao-suave" onClick={exportar} disabled={estado === 'exportando'}>
+          {estado === 'exportando' ? 'preparando…' : 'Exportar meus registros'}
+        </button>
+        {onNavegar && (
+          <button className="botao-suave" onClick={() => onNavegar({ secao: 'politica' })}>
+            Política de Privacidade
+          </button>
+        )}
+      </div>
+      {estado === 'feito' && (
+        <p style={{ color: 'var(--tinta-suave)', fontSize: 'var(--corpo-pequeno)', marginBottom: 0 }}>
+          Pronto. Baixei um arquivo com tudo que é seu.
+        </p>
+      )}
+      {estado === 'erro' && (
+        <p style={{ color: 'var(--tinta-suave)', fontSize: 'var(--corpo-pequeno)', marginBottom: 0 }}>
+          Não consegui exportar agora. Tenta de novo daqui a pouco.
+        </p>
+      )}
+      <p style={{ color: 'var(--tinta-suave)', fontSize: 'var(--corpo-pequeno)', margin: 'var(--espaco-2) 0 0' }}>
+        Quer apagar a sua história? É só pedir, por uma carta aqui dentro, ou pelo nosso contato na Política. Quando você pede, tudo o que é seu é removido, de vez.
+      </p>
+    </div>
   );
 }
 
