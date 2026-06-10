@@ -10,9 +10,8 @@
 export const POLITICA_VERSAO = '2026-06-10';
 export const POLITICA_DATA = '10 de junho de 2026';
 export const POLITICA_CONTATO = 'hello@val.help';
-// CONFIRMAR antes do lançamento: nome jurídico do Voa Mulher + CNPJ, ou nome
-// completo da responsável se pessoa física.
-export const POLITICA_RESPONSAVEL = '[COLOQUE AQUI: o nome jurídico do Voa Mulher com CNPJ, ou seu nome completo se pessoa física]';
+export const POLITICA_RESPONSAVEL = 'REDE VOA MULHER LTDA';
+export const POLITICA_CNPJ = '60.240.532/0001-28';
 
 export const POLITICA = [
   {
@@ -119,7 +118,7 @@ export const POLITICA = [
   {
     titulo: 'Falar com a gente',
     paragrafos: [
-      `A responsável pela Val é a ${POLITICA_RESPONSAVEL}. Pra qualquer dúvida sobre os seus dados, ou pra pedir pra apagar a sua história, escreva pra ${POLITICA_CONTATO}.`,
+      `A responsável pela Val é a ${POLITICA_RESPONSAVEL}, CNPJ ${POLITICA_CNPJ}. Pra qualquer dúvida sobre os seus dados, ou pra pedir pra apagar a sua história, escreva pra ${POLITICA_CONTATO}.`,
     ],
   },
 ];
