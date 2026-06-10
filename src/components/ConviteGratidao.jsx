@@ -38,10 +38,10 @@ export default function ConviteGratidao({ onFechar }) {
       {!sugestao ? (
         <>
           <p style={{ fontFamily: 'var(--fonte-titulo)', fontStyle: 'italic', fontSize: 'var(--titulo-sm)', color: 'var(--verde-petroleo)', margin: 0 }}>
-            Por que coisa pequena, agora, dá pra dizer obrigada?
+            Que coisa pequena, agora, merece um obrigada?
           </p>
           <p style={{ color: 'var(--tinta-suave)', fontSize: 'var(--corpo-pequeno)', margin: '4px 0 var(--espaco-2)' }}>
-            Se não vier, tudo bem. Você passa direto.
+            Se não vier, tudo bem.
           </p>
           <input
             value={texto}
@@ -62,7 +62,7 @@ export default function ConviteGratidao({ onFechar }) {
       ) : (
         <>
           <p style={{ color: 'var(--tinta-suave)', fontSize: 'var(--corpo-pequeno)', margin: '0 0 4px' }}>
-            Então deixa eu lembrar de uma:
+            Então uma que a gente esquece:
           </p>
           <p style={{ fontFamily: 'var(--fonte-titulo)', fontStyle: 'italic', fontSize: 'var(--titulo-sm)', color: 'var(--verde-petroleo)', margin: 0 }}>
             {sugestao}
