@@ -83,12 +83,14 @@ export default function BoasVindas({ onConcluir }) {
     setErro(null);
     setPensando(true);
     try {
-      const { texto: fala, planta, fechar } = await acolherComVal(novas);
+      const { texto: fala, planta } = await acolherComVal(novas);
       await plantar(planta);
       setMensagens([...novas, { role: 'assistant', text: fala }]);
-      // Salvaguarda: se a Val fez uma pergunta, a conversa não terminou, ainda
-      // que o modelo tenha marcado fechar. Nunca fechamos com pergunta no ar.
-      if (fechar && !/\?\s*["')]?\s*$/.test((fala || '').trim())) setFechou(true);
+      // Sinal de fim, robusto e independente do flag do modelo: enquanto a Val
+      // faz uma pergunta, a conversa segue (input aberto). Quando ela para de
+      // perguntar, chegou a um fim natural, fechamos (só resta Entrar).
+      const temPergunta = /\?\s*["')]?\s*$/.test((fala || '').trim());
+      setFechou(!temPergunta);
     } catch (err) {
       // Sem inventar: uma frase sóbria, e a porta de seguir pro app continua aberta.
       setErro('Não consegui responder agora. Podemos seguir, e a gente se conhece com calma depois.');
@@ -142,23 +144,25 @@ export default function BoasVindas({ onConcluir }) {
         <div ref={fim} />
       </div>
 
-      {/* O campo de resposta fica sempre à mão: ela nunca trava sem onde falar.
-          Quando a conversa chega a um fim natural, "Entrar" vira o convite
-          primário, mas ela ainda pode acrescentar algo se quiser. */}
-      <form onSubmit={enviar} style={{ display: 'grid', gap: 'var(--espaco-2)' }}>
-        <textarea
-          value={texto}
-          onChange={(e) => setTexto(e.target.value)}
-          onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) enviar(e); }}
-          rows={3}
-          placeholder="Pode escrever do jeito que vier."
-          style={{ resize: 'vertical', border: '1px solid var(--linha)', borderRadius: 'var(--raio-sm)', padding: 'var(--espaco-2)', background: 'var(--papel-branco)' }}
-        />
-        <div style={{ display: 'flex', gap: 'var(--espaco-2)', alignItems: 'center', flexWrap: 'wrap' }}>
-          <button type="submit" className={fechou ? 'botao-suave' : 'botao'} disabled={pensando || !texto.trim()}>Enviar</button>
-          {fechou ? (
-            <button type="button" className="botao" onClick={onConcluir}>Entrar</button>
-          ) : (
+      {/* Enquanto a conversa segue, o campo de resposta e o "deixar pra depois".
+          Quando a Val se despede (sem mais perguntas), o campo se recolhe e só
+          resta o convite de entrar. */}
+      {fechou ? (
+        <div style={{ textAlign: 'center' }}>
+          <button className="botao" onClick={onConcluir}>Entrar</button>
+        </div>
+      ) : (
+        <form onSubmit={enviar} style={{ display: 'grid', gap: 'var(--espaco-2)' }}>
+          <textarea
+            value={texto}
+            onChange={(e) => setTexto(e.target.value)}
+            onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) enviar(e); }}
+            rows={3}
+            placeholder="Pode escrever do jeito que vier."
+            style={{ resize: 'vertical', border: '1px solid var(--linha)', borderRadius: 'var(--raio-sm)', padding: 'var(--espaco-2)', background: 'var(--papel-branco)' }}
+          />
+          <div style={{ display: 'flex', gap: 'var(--espaco-2)', alignItems: 'center', flexWrap: 'wrap' }}>
+            <button type="submit" className="botao" disabled={pensando || !texto.trim()}>Enviar</button>
             <button
               type="button"
               onClick={onConcluir}
@@ -166,9 +170,9 @@ export default function BoasVindas({ onConcluir }) {
             >
               deixar isso pra depois
             </button>
-          )}
-        </div>
-      </form>
+          </div>
+        </form>
+      )}
 
       {guardou && (
         <p className="val-fade-in" style={{ color: 'var(--tinta-suave)', fontStyle: 'italic', fontFamily: 'var(--fonte-titulo)', fontSize: 'var(--corpo-pequeno)', textAlign: 'center', marginTop: 'var(--espaco-3)' }}>
