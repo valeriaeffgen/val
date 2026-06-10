@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Nav from './components/Nav';
 import Limiar from './sections/Limiar';
 import Chegada from './components/Chegada';
@@ -20,7 +20,7 @@ const MODO_CAIXA = typeof window !== 'undefined' && new URLSearchParams(window.l
 // os convites "do nada" respeitam um intervalo; os gatilhos (pesada, reclamar)
 // podem forçar. Dispensar não deixa rastro de culpa, só agenda o próximo.
 const GRAT_KEY = 'val.gratidao.ultimo';
-const GRAT_GAP = 1000 * 60 * 25;
+const GRAT_GAP = 1000 * 60 * 5;
 function podeConvidarGratidao() {
   try { return Date.now() - Number(localStorage.getItem(GRAT_KEY) || 0) > GRAT_GAP; } catch { return true; }
 }
@@ -98,16 +98,27 @@ export default function App() {
   const [mensagemInicial, setMensagemInicial] = useState(null);
   const [diarioCat, setDiarioCat] = useState(null);
   const [gratidao, setGratidao] = useState(false);
+  const primeiraSecao = useRef(true);
 
   function convidarGratidao(forcar = false) {
-    if (gratidao) return;
     if (!forcar && !podeConvidarGratidao()) return;
-    setGratidao(true);
+    setGratidao(true); // idempotente: se já estiver aberto, sem efeito
   }
   function fecharGratidao() {
     marcarConviteGratidao();
     setGratidao(false);
   }
+
+  // O convite "do nada": garante uma aparição na primeira seção que ela abre
+  // (respeitando o cooldown), e depois é probabilístico. Cobre tanto o menu
+  // quanto os caminhos, já que ambos mudam secaoId.
+  useEffect(() => {
+    if (!secaoId) return;
+    const primeira = primeiraSecao.current;
+    primeiraSecao.current = false;
+    if (primeira || Math.random() < 0.25) convidarGratidao();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [secaoId]);
 
   // Autenticação por e-mail: a sessão decide se mostramos a Entrada ou o app.
   const [authCarregando, setAuthCarregando] = useState(hasSupabase);
@@ -156,8 +167,6 @@ export default function App() {
     setMensagemInicial(mensagem);
     setDiarioCat(cat);
     setSecaoId(secao);
-    // "Do nada": de vez em quando, no meio do uso (o cooldown segura a frequência).
-    if (Math.random() < 0.15) convidarGratidao();
   }
 
   function onAcao(a) {
