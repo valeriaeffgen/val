@@ -41,3 +41,15 @@ export async function vincularEmail(email) {
 export async function sair() {
   return supabase.auth.signOut();
 }
+
+// Apaga a própria história, de vez (LGPD: direito de eliminação). A função Edge
+// `apagar` confirma a identidade pelo JWT e exclui a usuária; a cascata limpa
+// tudo. Em seguida, encerra a sessão local.
+export async function apagarMinhaConta() {
+  if (!hasSupabase) throw new Error('sem-backend');
+  const { data, error } = await supabase.functions.invoke('apagar', { body: {} });
+  if (error) throw error;
+  if (data?.erro) throw new Error(data.erro);
+  await supabase.auth.signOut().catch(() => {});
+  return true;
+}

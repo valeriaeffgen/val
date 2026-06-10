@@ -2,7 +2,7 @@ import { useState } from 'react';
 import Secao from '../components/Secao';
 import { db } from '../lib/db';
 import { usePerfil } from '../lib/useColecao';
-import { vincularEmail, sair } from '../lib/supabase';
+import { vincularEmail, sair, apagarMinhaConta } from '../lib/supabase';
 import { exportarRegistros } from '../lib/exportar';
 
 /*
@@ -66,7 +66,7 @@ export default function MeuCentro({ sessao, onNavegar }) {
   );
 }
 
-// Sua privacidade (LGPD): exportar tudo, ler a política, e como apagar.
+// Sua privacidade (LGPD): exportar tudo, ler a política, e a porta de saída.
 function Privacidade({ onNavegar }) {
   const [estado, setEstado] = useState('inicio'); // inicio | exportando | feito | erro
 
@@ -84,7 +84,7 @@ function Privacidade({ onNavegar }) {
     <div className="card" style={{ marginTop: 'var(--espaco-3)' }}>
       <h3 style={{ marginTop: 0 }}>Sua privacidade</h3>
       <p style={{ color: 'var(--tinta-suave)', marginTop: 0, fontSize: 'var(--corpo-pequeno)' }}>
-        A sua história é sua. Leve uma cópia, ou apague tudo, quando quiser.
+        A sua história é sua. Leve uma cópia, ou leve embora de vez, quando quiser.
       </p>
       <div style={{ display: 'flex', gap: 'var(--espaco-1)', flexWrap: 'wrap', alignItems: 'center' }}>
         <button className="botao-suave" onClick={exportar} disabled={estado === 'exportando'}>
@@ -97,18 +97,96 @@ function Privacidade({ onNavegar }) {
         )}
       </div>
       {estado === 'feito' && (
-        <p style={{ color: 'var(--tinta-suave)', fontSize: 'var(--corpo-pequeno)', marginBottom: 0 }}>
+        <p style={{ color: 'var(--tinta-suave)', fontSize: 'var(--corpo-pequeno)', margin: 'var(--espaco-2) 0 0' }}>
           Pronto. Baixei um arquivo com tudo que é seu.
         </p>
       )}
       {estado === 'erro' && (
-        <p style={{ color: 'var(--tinta-suave)', fontSize: 'var(--corpo-pequeno)', marginBottom: 0 }}>
+        <p style={{ color: 'var(--tinta-suave)', fontSize: 'var(--corpo-pequeno)', margin: 'var(--espaco-2) 0 0' }}>
           Não consegui exportar agora. Tenta de novo daqui a pouco.
         </p>
       )}
-      <p style={{ color: 'var(--tinta-suave)', fontSize: 'var(--corpo-pequeno)', margin: 'var(--espaco-2) 0 0' }}>
-        Quer apagar a sua história? É só pedir, por uma carta aqui dentro, ou pelo nosso contato na Política. Quando você pede, tudo o que é seu é removido, de vez.
+
+      <ApagarHistoria jaExportou={estado === 'feito'} onExportar={exportar} />
+    </div>
+  );
+}
+
+// A porta de saída digna (LGPD: direito de eliminação). Sem drama nem chantagem:
+// um lugar que respeita a escolha dela também respeita a de ir embora. Oferece
+// exportar antes, uma vez, com leveza, e pede dupla confirmação calma.
+function ApagarHistoria({ jaExportou, onExportar }) {
+  const [fase, setFase] = useState('fechado'); // fechado | aberto | confirmando | apagando | erro
+
+  async function apagar() {
+    setFase('apagando');
+    try {
+      await apagarMinhaConta();
+      // A sessão encerra; o App volta para a Entrada sozinho.
+    } catch {
+      setFase('erro');
+    }
+  }
+
+  if (fase === 'fechado') {
+    return (
+      <p style={{ margin: 'var(--espaco-3) 0 0' }}>
+        <button onClick={() => setFase('aberto')} style={{ background: 'none', border: 'none', padding: 0, color: 'var(--tinta-suave)', fontStyle: 'italic', fontFamily: 'var(--fonte-titulo)', cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: 3 }}>
+          apagar a minha história
+        </button>
       </p>
+    );
+  }
+
+  return (
+    <div style={{ marginTop: 'var(--espaco-3)', borderTop: '1px solid var(--linha)', paddingTop: 'var(--espaco-3)' }}>
+      <h3 style={{ fontStyle: 'italic', marginTop: 0 }}>Levar a sua história embora</h3>
+      <p style={{ color: 'var(--tinta)', marginTop: 0 }}>
+        A sua história é sua, inclusive pra levar embora. Se você apagar, tudo o que guardou aqui some, de vez, e tudo bem.
+      </p>
+
+      {!jaExportou && (
+        <p style={{ color: 'var(--tinta-suave)', fontSize: 'var(--corpo-pequeno)' }}>
+          Antes, se quiser, leve uma cópia.{' '}
+          <button onClick={onExportar} style={{ background: 'none', border: 'none', padding: 0, color: 'var(--verde-petroleo)', textDecoration: 'underline', textUnderlineOffset: 3, cursor: 'pointer', font: 'inherit' }}>
+            exportar agora
+          </button>
+        </p>
+      )}
+
+      {fase === 'aberto' && (
+        <div style={{ display: 'flex', gap: 'var(--espaco-1)', flexWrap: 'wrap', marginTop: 'var(--espaco-2)' }}>
+          <button className="botao-suave" onClick={() => setFase('confirmando')}>quero apagar a minha história</button>
+          <button className="botao-suave" onClick={() => setFase('fechado')}>voltar</button>
+        </div>
+      )}
+
+      {fase === 'confirmando' && (
+        <>
+          <p style={{ color: 'var(--tinta)', marginTop: 'var(--espaco-2)' }}>
+            Então é isso. Quando você confirmar, eu apago tudo agora, e não dá pra desfazer.
+          </p>
+          <div style={{ display: 'flex', gap: 'var(--espaco-1)', flexWrap: 'wrap' }}>
+            <button className="botao" onClick={apagar}>apagar, de vez</button>
+            <button className="botao-suave" onClick={() => setFase('fechado')}>deixa pra lá</button>
+          </div>
+        </>
+      )}
+
+      {fase === 'apagando' && (
+        <p style={{ color: 'var(--tinta-suave)', fontStyle: 'italic', fontFamily: 'var(--fonte-titulo)', marginTop: 'var(--espaco-2)' }}>
+          Apagando a sua história…
+        </p>
+      )}
+
+      {fase === 'erro' && (
+        <>
+          <p style={{ color: 'var(--tinta-suave)', marginTop: 'var(--espaco-2)' }}>
+            Não consegui apagar agora. Tenta de novo daqui a pouco, ou escreve pra gente pelo contato na Política.
+          </p>
+          <button className="botao-suave" onClick={() => setFase('confirmando')}>tentar de novo</button>
+        </>
+      )}
     </div>
   );
 }
