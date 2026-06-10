@@ -101,16 +101,16 @@ export async function marcarUtil(conteudoId) {
 
 /*
  * Acervo oficial: as ferramentas que a Valéria aprovou na curadoria, visíveis
- * para todas (RLS: status 'oficial' é legível por qualquer usuária).
+ * para todas. Vêm da tabela anônima `acervo_oficial` (sem user_id, sem rastro
+ * pessoal), que sobrevive à exclusão da autora.
  */
 export async function ferramentasOficiais() {
   if (!hasSupabase) return [];
   const { data, error } = await supabase
-    .from('conteudo_gerado')
+    .from('acervo_oficial')
     .select('id, texto')
     .eq('tipo', 'ferramenta')
-    .eq('status', 'oficial')
-    .order('util_count', { ascending: false })
+    .order('promovido_em', { ascending: false })
     .limit(20);
   if (error) return [];
   return (data ?? []).flatMap((r) => {

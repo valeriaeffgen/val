@@ -73,7 +73,8 @@ export default function Caixa() {
   }
 
   async function aprovar(id, texto) {
-    await supabase.from('conteudo_gerado').update({ texto, status: 'oficial' }).eq('id', id);
+    // Promove com cópia anônima no acervo de todas (desvinculada da autora).
+    await supabase.rpc('promover_oficial', { conteudo: id, texto_final: texto });
     await carregarCuradoria();
   }
   async function descartar(id) {
