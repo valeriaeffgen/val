@@ -4,6 +4,7 @@ import { db } from '../lib/db';
 import { useColecao } from '../lib/useColecao';
 import { JORNADAS } from '../data/seed';
 import { espelhoDaJornada } from '../lib/val';
+import VotoUtil from '../components/VotoUtil';
 
 /*
  * Olhar pra dentro (seção 6) — jornadas de autoconhecimento.
@@ -18,6 +19,7 @@ export default function OlharPraDentro() {
   const [texto, setTexto] = useState('');
   const [fase, setFase] = useState('lista'); // lista | perguntas | gerando | espelho | erro
   const [devolutiva, setDevolutiva] = useState('');
+  const [espelhoId, setEspelhoId] = useState(null);
   const [erro, setErro] = useState('');
 
   const passados = useColecao('jornadas');
@@ -57,13 +59,14 @@ export default function OlharPraDentro() {
   async function gerar(todas) {
     setFase('gerando');
     try {
-      const d = await espelhoDaJornada({
+      const { texto: d, id } = await espelhoDaJornada({
         jornadaId: jornada.id,
         titulo: jornada.titulo,
         perguntas: jornada.perguntas,
         respostas: todas,
       });
       setDevolutiva(d);
+      setEspelhoId(id);
       setFase('espelho');
       db.adicionar('jornadas', { jornadaId: jornada.id, titulo: jornada.titulo, respostas: todas, devolutiva: d }).catch(() => {});
     } catch (err) {
@@ -127,6 +130,7 @@ export default function OlharPraDentro() {
           <p style={{ fontFamily: 'var(--fonte-titulo)', fontStyle: 'italic', fontSize: 'var(--titulo-sm)', lineHeight: 1.5, margin: 0 }}>
             {devolutiva}
           </p>
+          <VotoUtil id={espelhoId} />
         </div>
         <div style={{ marginTop: 'var(--espaco-3)' }}>
           <button className="botao-suave" onClick={voltarLista}>voltar</button>

@@ -101,13 +101,13 @@ Deno.serve(async (req) => {
     // CACHE PRIMEIRO (regra 2): a palavra de hoje já existe? Reaproveita.
     const { data: existente } = await supabase
       .from("conteudo_gerado")
-      .select("texto")
+      .select("id, texto")
       .eq("tipo", "palavra")
       .eq("contexto->>day", day)
       .order("created_at", { ascending: false })
       .limit(1)
       .maybeSingle();
-    if (existente?.texto) return json({ texto: existente.texto, cache: true });
+    if (existente?.texto) return json({ texto: existente.texto, cache: true, id: existente.id });
 
     // Gera na voz da Val, com o contexto pessoal dela.
     const contexto = await montarContexto(supabase).catch(() => "");
@@ -138,9 +138,13 @@ Deno.serve(async (req) => {
     if (!texto) return json({ erro: "vazio" }, 502);
 
     // Guarda no acervo gerado (rascunho) — a fila de curadoria parte daqui (seção 7).
-    await supabase.from("conteudo_gerado").insert({ tipo: "palavra", contexto: { day }, texto });
+    const { data: inserido } = await supabase
+      .from("conteudo_gerado")
+      .insert({ tipo: "palavra", contexto: { day }, texto })
+      .select("id")
+      .single();
 
-    return json({ texto, cache: false });
+    return json({ texto, cache: false, id: inserido?.id ?? null });
   } catch (e) {
     console.error("palavra: erro inesperado", e);
     return json({ erro: "inesperado" }, 500);

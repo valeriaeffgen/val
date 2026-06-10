@@ -100,12 +100,12 @@ Deno.serve(async (req) => {
     // CACHE PRIMEIRO (regra 2): este espelho já foi gerado? Reaproveita.
     const { data: existente } = await supabase
       .from("conteudo_gerado")
-      .select("texto")
+      .select("id, texto")
       .eq("tipo", "espelho")
       .eq("contexto->>chave", chave)
       .limit(1)
       .maybeSingle();
-    if (existente?.texto) return json({ texto: existente.texto, cache: true });
+    if (existente?.texto) return json({ texto: existente.texto, cache: true, id: existente.id });
 
     const ctx = await contextoPerfil(supabase).catch(() => "");
     const memoria = await montarMemoria(supabase).catch(() => "");
@@ -139,9 +139,13 @@ Deno.serve(async (req) => {
     const texto = (data.content ?? []).filter((b: any) => b.type === "text").map((b: any) => b.text).join("").trim();
     if (!texto) return json({ erro: "vazio" }, 502);
 
-    await supabase.from("conteudo_gerado").insert({ tipo: "espelho", contexto: { chave, jornadaId }, texto });
+    const { data: inserido } = await supabase
+      .from("conteudo_gerado")
+      .insert({ tipo: "espelho", contexto: { chave, jornadaId }, texto })
+      .select("id")
+      .single();
 
-    return json({ texto, cache: false });
+    return json({ texto, cache: false, id: inserido?.id ?? null });
   } catch (e) {
     console.error("espelho: erro inesperado", e);
     return json({ erro: "inesperado" }, 500);

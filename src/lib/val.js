@@ -47,7 +47,7 @@ export async function palavraDeHoje() {
   const { data, error } = await supabase.functions.invoke('palavra', { body: { day } });
   if (error) throw error;
   if (data?.erro) throw new Error(data.erro);
-  return data?.texto ?? '';
+  return { texto: data?.texto ?? '', id: data?.id ?? null };
 }
 
 /*
@@ -75,7 +75,7 @@ export async function espelhoDaJornada({ jornadaId, titulo, perguntas, respostas
   });
   if (error) throw error;
   if (data?.erro) throw new Error(data.erro);
-  return data?.texto ?? '';
+  return { texto: data?.texto ?? '', id: data?.id ?? null };
 }
 
 /*

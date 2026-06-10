@@ -5,6 +5,7 @@ import { hoje } from '../lib/storage';
 import { useColecao } from '../lib/useColecao';
 import { palavraDeHoje } from '../lib/val';
 import { hasSupabase } from '../lib/supabase';
+import VotoUtil from '../components/VotoUtil';
 
 /*
  * Autoamor (seção 6) — três rituais, em cards escuros (seção 5):
@@ -27,6 +28,7 @@ export default function Autoamor() {
 // --- (2) A palavra de hoje -----------------------------------------------------
 function PalavraDeHoje() {
   const [palavra, setPalavra] = useState(null);
+  const [palavraId, setPalavraId] = useState(null);
   const [estado, setEstado] = useState('inicio'); // inicio | carregando | pronta | erro | sem-backend
   const [plantada, setPlantada] = useState(false);
 
@@ -34,8 +36,9 @@ function PalavraDeHoje() {
     if (!hasSupabase) { setEstado('sem-backend'); return; }
     setEstado('carregando');
     try {
-      const t = await palavraDeHoje();
-      setPalavra(t);
+      const { texto, id } = await palavraDeHoje();
+      setPalavra(texto);
+      setPalavraId(id);
       setEstado('pronta');
     } catch (e) {
       setEstado(e?.message === 'sem-backend' ? 'sem-backend' : 'erro');
@@ -71,6 +74,7 @@ function PalavraDeHoje() {
           <button className="botao-suave" onClick={plantar} disabled={plantada} style={corBotao}>
             {plantada ? 'plantada. agora é sua.' : 'Plantar no meu banco'}
           </button>
+          <VotoUtil id={palavraId} escuro />
         </>
       )}
       {estado === 'erro' && (
