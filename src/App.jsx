@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import Nav from './components/Nav';
 import Limiar from './sections/Limiar';
 import BoasVindas from './sections/BoasVindas';
@@ -9,7 +9,7 @@ import Videos from './sections/Videos';
 import Mural from './sections/Mural';
 import Caixa from './sections/Caixa';
 import Entrada from './sections/Entrada';
-import ConviteGratidao from './components/ConviteGratidao';
+import GratidaoWidget from './components/GratidaoWidget';
 import { SECOES } from './sections';
 import { db } from './lib/db';
 import { supabase, hasSupabase } from './lib/supabase';
@@ -18,11 +18,9 @@ import { PAUSA_PERGUNTAS } from './data/seed';
 // Caixa de entrada da Valéria: acessível por /?caixa (sem login anônimo).
 const MODO_CAIXA = typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('caixa');
 
-// Gratidão é transversal e CONVITE, nunca cobrança. O cooldown evita cansar:
-// os convites "do nada" respeitam um intervalo; os gatilhos (pesada, reclamar)
-// podem forçar. Dispensar não deixa rastro de culpa, só agenda o próximo.
-const GRAT_KEY = 'val.gratidao.ultimo';
-const GRAT_GAP = 1000 * 60 * 90;
+// Gratidão é transversal e CONVITE, nunca cobrança. Vive numa bolha discreta no
+// canto, presente o tempo todo (presença passiva, não cobrança). Os gatilhos
+// (chegar pesada, reclamar) só pedem que a faixa abra, sem modal no meio da tela.
 
 // A primeira visita (boas-vindas) acontece uma vez. Marcamos quando ela já foi
 // vista (concluída ou adiada) para não reaparecer a cada entrada.
@@ -32,12 +30,6 @@ function boasVindasVistas() {
 }
 function marcarBoasVindas() {
   try { localStorage.setItem(BOAS_VINDAS_KEY, '1'); } catch { /* ignore */ }
-}
-function podeConvidarGratidao() {
-  try { return Date.now() - Number(localStorage.getItem(GRAT_KEY) || 0) > GRAT_GAP; } catch { return true; }
-}
-function marcarConviteGratidao() {
-  try { localStorage.setItem(GRAT_KEY, String(Date.now())); } catch { /* ignore */ }
 }
 
 // Sorteia n itens de um array (para os elevadores na chegada).
@@ -110,28 +102,13 @@ export default function App() {
   const [pausaQ, setPausaQ] = useState(PAUSA_PERGUNTAS[0]);
   const [mensagemInicial, setMensagemInicial] = useState(null);
   const [diarioCat, setDiarioCat] = useState(null);
-  const [gratidao, setGratidao] = useState(false);
-  const primeiraSecao = useRef(true);
+  // A bolha de gratidão fica sempre presente; isto só conta os pedidos de
+  // abertura vindos dos gatilhos (chegar pesada, reclamar).
+  const [aberturaGrat, setAberturaGrat] = useState(0);
 
-  function convidarGratidao(forcar = false) {
-    if (!forcar && !podeConvidarGratidao()) return;
-    setGratidao(true); // idempotente: se já estiver aberto, sem efeito
+  function pedirGratidao() {
+    setAberturaGrat((n) => n + 1);
   }
-  function fecharGratidao() {
-    marcarConviteGratidao();
-    setGratidao(false);
-  }
-
-  // O convite "do nada": garante uma aparição na primeira seção que ela abre
-  // (respeitando o cooldown), e depois é probabilístico. Cobre tanto o menu
-  // quanto os caminhos, já que ambos mudam secaoId.
-  useEffect(() => {
-    if (!secaoId || secaoId === 'mural' || secaoId === 'videos') return;
-    const primeira = primeiraSecao.current;
-    primeiraSecao.current = false;
-    if (primeira || Math.random() < 0.25) convidarGratidao();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [secaoId]);
 
   // Autenticação por e-mail: a sessão decide se mostramos a Entrada ou o app.
   const [authCarregando, setAuthCarregando] = useState(hasSupabase);
@@ -180,7 +157,7 @@ export default function App() {
     const palavras = await db.listar('palavras').catch(() => []);
     setResposta(montarResposta(vibeId, perfil?.elevadores ?? [], palavras));
     // Gatilho: chegar pesada é um momento de gratidão. Convite, nunca cobrança.
-    if (vibeId === 'pesada') convidarGratidao(true);
+    if (vibeId === 'pesada') pedirGratidao();
   }
 
   function aoPular() {
@@ -288,7 +265,7 @@ export default function App() {
             catInicial={diarioCat}
             onNavegar={navegar}
             onPausa={abrirPausa}
-            onGratidao={() => convidarGratidao(true)}
+            onGratidao={() => pedirGratidao()}
             sessao={sessao}
           />
         ) : null}
@@ -300,7 +277,7 @@ export default function App() {
         <button className="botao-suave" onClick={() => setSaindo(true)}>Encerrar visita</button>
       </footer>
 
-      {gratidao && <ConviteGratidao onFechar={fecharGratidao} />}
+      <GratidaoWidget pedidoAbertura={aberturaGrat} />
     </div>
   );
 }
