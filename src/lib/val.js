@@ -103,3 +103,16 @@ export async function ferramentasOficiais() {
     try { return [{ id: r.id, ...JSON.parse(r.texto) }]; } catch { return []; }
   });
 }
+
+/*
+ * Trajetória: o resumo de SENTIDO da história dela, gerado na voz da Val, com
+ * cache (um por dia). Testemunho, nunca métrica. Ver supabase/functions/historia.
+ */
+export async function resumoDaHistoria() {
+  if (!hasSupabase) throw new Error('sem-backend');
+  const day = new Date().toISOString().slice(0, 10);
+  const { data, error } = await supabase.functions.invoke('historia', { body: { day } });
+  if (error) throw error;
+  if (data?.erro) throw new Error(data.erro);
+  return data?.texto ?? '';
+}

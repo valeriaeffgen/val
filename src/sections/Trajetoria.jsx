@@ -3,7 +3,16 @@ import Secao from '../components/Secao';
 import { db } from '../lib/db';
 import { hoje } from '../lib/storage';
 import { useColecao } from '../lib/useColecao';
-import { ESTADOS_CHEGADA } from '../data/seed';
+import { resumoDaHistoria } from '../lib/val';
+import { hasSupabase } from '../lib/supabase';
+import { ESTADOS_CHEGADA, TIPOS_PROSPERIDADE } from '../data/seed';
+
+function formatDia(day) {
+  if (!day) return '';
+  if (day === hoje()) return 'hoje';
+  const [y, m, d] = day.split('-').map(Number);
+  return new Date(y, m - 1, d).toLocaleDateString('pt-BR', { day: 'numeric', month: 'long' });
+}
 
 /*
  * Trajetória (seção 6) — o gráfico de bem-estar, card escuro (seção 5).
@@ -46,8 +55,100 @@ export default function Trajetoria() {
         )}
       </div>
 
+      <ResumoDaVal />
+      <AcervoCompleto />
       <Feedback />
     </Secao>
+  );
+}
+
+// --- (2) O resumo de sentido, escrito pela Val (testemunho, nunca métrica) -----
+function ResumoDaVal() {
+  const [texto, setTexto] = useState(null);
+  const [estado, setEstado] = useState('inicio'); // inicio | carregando | pronta | erro | sem-backend
+
+  async function receber() {
+    if (!hasSupabase) { setEstado('sem-backend'); return; }
+    setEstado('carregando');
+    try { setTexto(await resumoDaHistoria()); setEstado('pronta'); }
+    catch (e) { setEstado(e?.message === 'sem-backend' ? 'sem-backend' : 'erro'); }
+  }
+
+  const corBotao = { color: 'var(--sobre-escuro)', borderColor: 'rgba(239,231,214,0.4)' };
+
+  return (
+    <div className="card-escuro" style={{ marginTop: 'var(--espaco-3)' }}>
+      <h3 style={{ fontStyle: 'italic', marginTop: 0, marginBottom: 4 }}>O que a Val vê na sua história</h3>
+      <p style={{ color: 'var(--sobre-escuro-suave)', marginTop: 0, fontSize: 'var(--corpo-pequeno)' }}>
+        Não um placar, um testemunho de quem você está se tornando.
+      </p>
+      {estado === 'inicio' && <button className="botao-suave" onClick={receber} style={corBotao}>Ler o que a Val vê</button>}
+      {estado === 'carregando' && <p style={{ color: 'var(--sobre-escuro-suave)', margin: 0 }}>A Val está relendo a sua história…</p>}
+      {estado === 'pronta' && (
+        <p style={{ fontFamily: 'var(--fonte-titulo)', fontStyle: 'italic', fontSize: 'var(--titulo-sm)', color: 'var(--sobre-escuro)', lineHeight: 1.6, margin: 0, whiteSpace: 'pre-wrap' }}>
+          {texto}
+        </p>
+      )}
+      {estado === 'erro' && <p style={{ color: 'var(--sobre-escuro-suave)', margin: 0 }}>Agora não consegui reler. Respira, daqui a pouco eu volto.</p>}
+      {estado === 'sem-backend' && <p style={{ color: 'var(--sobre-escuro-suave)', margin: 0 }}>O resumo precisa do backend ligado para ser escrito.</p>}
+    </div>
+  );
+}
+
+// --- (1) O acervo completo, por tipo, pra reler -------------------------------
+function AcervoCompleto() {
+  const diario = useColecao('diario');
+  const prosperidade = useColecao('prosperidade');
+  const jornadas = useColecao('jornadas');
+
+  const grupos = [
+    { titulo: 'Gratidões', itens: diario.filter((d) => d.cat === 'gratidao').map((d) => ({ id: d.id, texto: d.text, sub: formatDia(d.day) })) },
+    ...Object.keys(TIPOS_PROSPERIDADE).map((t) => ({
+      titulo: TIPOS_PROSPERIDADE[t],
+      itens: prosperidade.filter((p) => p.tipo === t).map((p) => ({ id: p.id, texto: p.texto, sub: p.pergunta })),
+    })),
+    { titulo: 'Gestos de autoamor', itens: diario.filter((d) => d.cat === 'autoamor').map((d) => ({ id: d.id, texto: d.text, sub: formatDia(d.day) })) },
+    { titulo: 'Jornadas percorridas', itens: jornadas.filter((j) => j.devolutiva).map((j) => ({ id: j.id, texto: j.devolutiva, sub: j.titulo })) },
+  ].filter((g) => g.itens.length);
+
+  if (!grupos.length) return null;
+
+  return (
+    <div style={{ marginTop: 'var(--espaco-4)' }}>
+      <h3 style={{ fontStyle: 'italic' }}>Tudo que você guardou</h3>
+      <p style={{ color: 'var(--tinta-suave)', marginTop: 0, fontSize: 'var(--corpo-pequeno)' }}>
+        A sua história acumulada, por tipo, pra reler quando quiser.
+      </p>
+      <div style={{ display: 'grid', gap: 'var(--espaco-1)' }}>
+        {grupos.map((g) => <Grupo key={g.titulo} grupo={g} />)}
+      </div>
+    </div>
+  );
+}
+
+function Grupo({ grupo }) {
+  const [aberto, setAberto] = useState(false);
+  return (
+    <div className="card" style={{ padding: 'var(--espaco-2)' }}>
+      <button
+        onClick={() => setAberto((a) => !a)}
+        aria-expanded={aberto}
+        style={{ background: 'none', border: 'none', padding: 0, width: '100%', textAlign: 'left', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 'var(--espaco-2)' }}
+      >
+        <span style={{ fontFamily: 'var(--fonte-titulo)', fontStyle: 'italic', fontSize: 'var(--titulo-sm)', color: 'var(--verde-petroleo)' }}>{grupo.titulo}</span>
+        <span style={{ color: 'var(--tinta-suave)', fontSize: 'var(--corpo-pequeno)' }}>{aberto ? 'fechar' : 'abrir'}</span>
+      </button>
+      {aberto && (
+        <div style={{ display: 'grid', gap: 'var(--espaco-1)', marginTop: 'var(--espaco-2)' }}>
+          {grupo.itens.map((it) => (
+            <div key={it.id} style={{ borderTop: '1px solid var(--linha)', paddingTop: 'var(--espaco-1)' }}>
+              <p style={{ margin: 0, lineHeight: 1.45, whiteSpace: 'pre-wrap' }}>{it.texto}</p>
+              {it.sub && <p style={{ margin: '2px 0 0', color: 'var(--tinta-suave)', fontSize: 'var(--corpo-pequeno)', fontStyle: 'italic', fontFamily: 'var(--fonte-titulo)' }}>{it.sub}</p>}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
 
