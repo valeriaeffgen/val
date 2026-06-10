@@ -24,6 +24,20 @@ export async function conversarComVal(mensagens, chegada) {
 }
 
 /*
+ * A primeira visita — a Val se apresenta e CONVERSA, em vez de formulário,
+ * conhecendo a mulher com leveza. Devolve a fala da Val, o que ela plantou no
+ * Meu Centro (extraído da conversa) e se a conversa chegou a um fim natural.
+ * Ver supabase/functions/acolher.
+ */
+export async function acolherComVal(mensagens) {
+  if (!hasSupabase) throw new Error('sem-backend');
+  const { data, error } = await supabase.functions.invoke('acolher', { body: { mensagens } });
+  if (error) throw error;
+  if (data?.erro) throw new Error(data.erro);
+  return { texto: data?.texto ?? '', planta: data?.planta ?? {}, fechar: data?.fechar === true };
+}
+
+/*
  * "A palavra de hoje" do Autoamor — gerada na voz da Val, com cache no backend
  * (uma por dia, reaproveitada). Ver supabase/functions/palavra.
  */

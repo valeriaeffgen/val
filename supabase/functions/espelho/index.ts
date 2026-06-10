@@ -109,9 +109,12 @@ Deno.serve(async (req) => {
 
     const ctx = await contextoPerfil(supabase).catch(() => "");
     const memoria = await montarMemoria(supabase).catch(() => "");
+    // Degradação graciosa: mulher nova, sem histórico ainda. O espelho se apoia
+    // nas respostas desta jornada, e isso basta. Nunca soar como dado faltando.
+    const PRIMEIRA_VEZ = "\n\nPRIMEIRA VEZ: pode ser a primeira vez dela aqui e você talvez só tenha as respostas desta jornada, e isso basta. Trabalhe com o que ela trouxe agora, sem dar a entender que falta informação sobre ela.";
     const system = (ctx
       ? `${CONSTITUICAO}\n\nO QUE VOCÊ SABE DELA (use com sobriedade, sem exibir que sabe):\n${ctx}`
-      : CONSTITUICAO) + memoria;
+      : CONSTITUICAO) + memoria + (ctx || memoria ? "" : PRIMEIRA_VEZ);
 
     const qea = (perguntas as string[])
       .map((p, i) => `Pergunta: ${p}\nResposta dela: ${respostas[i] ?? ""}`)

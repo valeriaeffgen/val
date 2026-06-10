@@ -112,9 +112,12 @@ Deno.serve(async (req) => {
     // Gera na voz da Val, com o contexto pessoal dela.
     const contexto = await montarContexto(supabase).catch(() => "");
     const memoria = await montarMemoria(supabase).catch(() => "");
+    // Degradação graciosa: sem nenhum acervo (mulher nova), a palavra não pode
+    // fingir intimidade nem soar como dado faltando. Vira boas-vindas digna.
+    const PRIMEIRA_VEZ = "\n\nPRIMEIRA VEZ: você ainda não conhece a história dela, talvez seja a primeira vez dela aqui. Não invente que conhece, não tente ser específica, e nunca dê a impressão de que falta informação. Escreva uma palavra de chegada simples e digna, que acolhe quem está começando, sem prometer nada.";
     const system = (contexto
       ? `${CONSTITUICAO}\n\nO QUE VOCÊ SABE DELA (use com sobriedade, sem exibir que sabe):\n${contexto}`
-      : CONSTITUICAO) + memoria;
+      : CONSTITUICAO) + memoria + (contexto || memoria ? "" : PRIMEIRA_VEZ);
 
     const resposta = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",

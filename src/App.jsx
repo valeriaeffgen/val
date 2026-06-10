@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Nav from './components/Nav';
 import Limiar from './sections/Limiar';
+import BoasVindas from './sections/BoasVindas';
 import Chegada from './components/Chegada';
 import Pausa from './components/Pausa';
 import CapturaSaida from './components/CapturaSaida';
@@ -22,6 +23,16 @@ const MODO_CAIXA = typeof window !== 'undefined' && new URLSearchParams(window.l
 // podem forçar. Dispensar não deixa rastro de culpa, só agenda o próximo.
 const GRAT_KEY = 'val.gratidao.ultimo';
 const GRAT_GAP = 1000 * 60 * 90;
+
+// A primeira visita (boas-vindas) acontece uma vez. Marcamos quando ela já foi
+// vista (concluída ou adiada) para não reaparecer a cada entrada.
+const BOAS_VINDAS_KEY = 'val.boasvindas';
+function boasVindasVistas() {
+  try { return localStorage.getItem(BOAS_VINDAS_KEY) === '1'; } catch { return false; }
+}
+function marcarBoasVindas() {
+  try { localStorage.setItem(BOAS_VINDAS_KEY, '1'); } catch { /* ignore */ }
+}
 function podeConvidarGratidao() {
   try { return Date.now() - Number(localStorage.getItem(GRAT_KEY) || 0) > GRAT_GAP; } catch { return true; }
 }
@@ -126,6 +137,27 @@ export default function App() {
   const [authCarregando, setAuthCarregando] = useState(hasSupabase);
   const [sessao, setSessao] = useState(null);
 
+  // Primeira visita: null = ainda decidindo, true = acolher, false = seguir.
+  const [acolhimento, setAcolhimento] = useState(null);
+
+  function concluirAcolhimento() {
+    marcarBoasVindas();
+    setAcolhimento(false);
+  }
+
+  // Decide (uma vez) se esta é uma primeira visita: já vista antes? perfil vazio?
+  // Só roda quando dá pra ler o perfil (sessão pronta, quando há backend).
+  useEffect(() => {
+    if (MODO_CAIXA || acolhimento !== null) return;
+    if (hasSupabase && (authCarregando || !sessao)) return;
+    if (boasVindasVistas()) { setAcolhimento(false); return; }
+    db.perfil().then((p) => {
+      const temAlgo = ['valores', 'conquistas', 'foco', 'elevadores'].some((c) => (p?.[c]?.length ?? 0) > 0);
+      if (temAlgo) { marcarBoasVindas(); setAcolhimento(false); }
+      else setAcolhimento(true);
+    }).catch(() => setAcolhimento(false));
+  }, [acolhimento, authCarregando, sessao]);
+
   useEffect(() => {
     if (!hasSupabase || MODO_CAIXA) { setAuthCarregando(false); return; }
     supabase.auth.getSession().then(({ data }) => {
@@ -218,6 +250,14 @@ export default function App() {
   }
 
   if (!entrou) {
+    // Primeira impressão da Val: o acolhimento de boas-vindas vem antes da
+    // chegada. Enquanto decidimos, um instante de respiro (evita piscar).
+    if (acolhimento === null) {
+      return <section style={{ minHeight: '100%', display: 'grid', placeItems: 'center' }}><p style={{ color: 'var(--tinta-suave)' }}>um instante…</p></section>;
+    }
+    if (acolhimento) {
+      return <BoasVindas onConcluir={concluirAcolhimento} />;
+    }
     return <Limiar onChegar={aoChegar} onPular={aoPular} />;
   }
 
