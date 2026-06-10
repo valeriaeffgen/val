@@ -21,7 +21,7 @@ const MODO_CAIXA = typeof window !== 'undefined' && new URLSearchParams(window.l
 // os convites "do nada" respeitam um intervalo; os gatilhos (pesada, reclamar)
 // podem forçar. Dispensar não deixa rastro de culpa, só agenda o próximo.
 const GRAT_KEY = 'val.gratidao.ultimo';
-const GRAT_GAP = 1000 * 60 * 5;
+const GRAT_GAP = 1000 * 60 * 90;
 function podeConvidarGratidao() {
   try { return Date.now() - Number(localStorage.getItem(GRAT_KEY) || 0) > GRAT_GAP; } catch { return true; }
 }
