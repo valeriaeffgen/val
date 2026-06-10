@@ -61,6 +61,23 @@ async function contextoPerfil(supabase: any): Promise<string> {
   ].filter(Boolean).join("\n");
 }
 
+// Memória de amiga (seção 7): puxa, com sobriedade, o acervo real dela. Não é
+// relatório, é o que uma amiga que acompanha a vida dela lembraria.
+async function montarMemoria(supabase: any): Promise<string> {
+  const blocos: string[] = [];
+  const { data: diario } = await supabase.from("diario").select("cat, text").order("created_at", { ascending: false }).limit(30);
+  const grat = (diario ?? []).filter((d: any) => d.cat === "gratidao").map((d: any) => d.text).slice(0, 6);
+  const auto = (diario ?? []).filter((d: any) => d.cat === "autoamor").map((d: any) => d.text).slice(0, 4);
+  if (grat.length) blocos.push(`Pelo que ela tem agradecido: ${grat.join(" / ")}.`);
+  if (auto.length) blocos.push(`Gestos de amor por si: ${auto.join(" / ")}.`);
+  const { data: prosp } = await supabase.from("prosperidade").select("texto").order("created_at", { ascending: false }).limit(6);
+  if (prosp?.length) blocos.push(`O que ela reconheceu como seu: ${prosp.map((p: any) => p.texto).join(" / ")}.`);
+  const { data: palavras } = await supabase.from("palavras").select("text").order("created_at", { ascending: false }).limit(6);
+  if (palavras?.length) blocos.push(`Palavras que ela guardou pra si: ${palavras.map((p: any) => p.text).join(" / ")}.`);
+  if (!blocos.length) return "";
+  return `\n\nVOCÊ CONHECE A VIDA DELA (memória de amiga, não relatório):\n${blocos.join("\n")}\nUse disto só o que for relevante a este momento, uma coisa de cada vez. Nunca liste, nunca despeje tudo, nunca diga que está lendo registros. Às vezes nada disto cabe, e tudo bem.`;
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
   if (req.method !== "POST") return json({ erro: "metodo" }, 405);
@@ -91,9 +108,10 @@ Deno.serve(async (req) => {
     if (existente?.texto) return json({ texto: existente.texto, cache: true });
 
     const ctx = await contextoPerfil(supabase).catch(() => "");
-    const system = ctx
+    const memoria = await montarMemoria(supabase).catch(() => "");
+    const system = (ctx
       ? `${CONSTITUICAO}\n\nO QUE VOCÊ SABE DELA (use com sobriedade, sem exibir que sabe):\n${ctx}`
-      : CONSTITUICAO;
+      : CONSTITUICAO) + memoria;
 
     const qea = (perguntas as string[])
       .map((p, i) => `Pergunta: ${p}\nResposta dela: ${respostas[i] ?? ""}`)
