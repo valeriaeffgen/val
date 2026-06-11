@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Val — mockup da navegação nova</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;1,9..144,400&family=Karla:wght@400;500;600&family=Pacifico&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --verde-petroleo:#1d3a32; --verde-petroleo-2:#24463d; --ambar:#c9a24b;
+    --papel:#f6f1e7; --papel-branco:#fbf8f1; --tinta-suave:#4a6258; --tinta:#2c3b35;
+    --ambar-suave:rgba(201,162,75,0.16); --verde-suave:rgba(29,58,50,0.08);
+    --linha:rgba(74,98,88,0.18); --sobre-escuro:#efe7d6; --sobre-escuro-suave:rgba(239,231,214,0.72);
+    --f-ass:'Pacifico',cursive; --f-tit:'Fraunces',Georgia,serif; --f-corpo:'Karla',system-ui,sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; font-family:var(--f-corpo); color:var(--tinta); background:var(--papel);
+    background-image:radial-gradient(1200px 600px at 12% -8%, rgba(201,162,75,.10), transparent 60%),
+      radial-gradient(1000px 700px at 100% 0%, rgba(29,58,50,.07), transparent 55%);
+    -webkit-font-smoothing:antialiased; padding:32px 20px 80px;
+  }
+  h1,h2,h3{font-family:var(--f-tit);font-weight:500;color:var(--verde-petroleo);line-height:1.2}
+  .wrap{max-width:1080px;margin:0 auto}
+  .lead{color:var(--tinta-suave);max-width:60ch;margin:0 0 36px}
+  .assin{font-family:var(--f-ass);color:var(--verde-petroleo)}
+  .assin .p{color:var(--ambar)}
+  .rotulo-secao{font-size:.78rem;letter-spacing:.14em;text-transform:uppercase;color:var(--tinta-suave);margin:40px 0 12px;font-weight:600}
+
+  /* ====================== DESKTOP NAV ====================== */
+  .frame{background:var(--papel-branco);border:1px solid var(--linha);border-radius:18px;
+    box-shadow:0 1px 2px rgba(29,58,50,.04),0 10px 30px rgba(29,58,50,.07);overflow:hidden}
+  .dnav{display:flex;align-items:center;gap:28px;padding:14px 26px;
+    background:rgba(246,241,231,.82);backdrop-filter:blur(8px);border-bottom:1px solid var(--linha)}
+  .dnav .assin{font-size:1.7rem}
+  .grupos{display:flex;gap:26px;flex:1;flex-wrap:wrap}
+  .grupo{display:flex;flex-direction:column;gap:5px;padding-right:26px;border-right:1px solid var(--linha)}
+  .grupo:last-child{border-right:none;padding-right:0}
+  .grupo .glabel{font-size:.66rem;letter-spacing:.16em;text-transform:uppercase;color:var(--ambar);font-weight:600}
+  .grupo .gitems{display:flex;gap:16px;flex-wrap:wrap}
+  .link{font-size:1rem;color:var(--tinta-suave);text-decoration:none;padding:2px 0;white-space:nowrap;border-bottom:2px solid transparent}
+  .link:hover{color:var(--verde-petroleo)}
+  .link.ativo{color:var(--verde-petroleo);font-weight:600;border-bottom-color:var(--ambar)}
+
+  .palco{padding:34px 28px;min-height:150px}
+  .palco h2{font-style:italic;margin:0 0 8px}
+  .palco p{color:var(--tinta-suave);margin:0}
+
+  .rodape{display:flex;gap:18px;justify-content:center;padding:14px;border-top:1px solid var(--linha)}
+  .rodape a{font-size:.85rem;color:var(--tinta-suave);text-decoration:none;opacity:.8}
+  .rodape a:hover{opacity:1;text-decoration:underline;text-underline-offset:3px}
+
+  /* ====================== MOBILE ====================== */
+  .fones{display:flex;gap:36px;flex-wrap:wrap;justify-content:center}
+  .fone{width:300px;height:600px;background:var(--papel);border:1px solid var(--linha);border-radius:34px;
+    box-shadow:0 1px 2px rgba(29,58,50,.04),0 14px 40px rgba(29,58,50,.10);overflow:hidden;position:relative;display:flex;flex-direction:column}
+  .topo{padding:16px 18px 10px;border-bottom:1px solid var(--linha);display:flex;justify-content:space-between;align-items:center;background:rgba(246,241,231,.82)}
+  .topo .assin{font-size:1.4rem}
+  .conteudo{flex:1;padding:22px 18px;overflow:auto}
+  .conteudo h2{font-style:italic;margin:0 0 6px;font-size:1.4rem}
+  .conteudo p{color:var(--tinta-suave);margin:0;font-size:.95rem}
+
+  .tab{position:absolute;left:0;right:0;bottom:0;display:flex;background:var(--papel-branco);
+    border-top:1px solid var(--linha);box-shadow:0 -6px 20px rgba(29,58,50,.06)}
+  .tab button{flex:1;background:none;border:none;padding:9px 2px 11px;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;color:var(--tinta-suave);font-family:var(--f-corpo)}
+  .tab button .t{font-size:.7rem}
+  .tab button.ativo{color:var(--verde-petroleo)}
+  .tab button.ativo .ico{color:var(--ambar)}
+  .ico{width:22px;height:22px;display:block}
+
+  /* folha "Mais" */
+  .sheet{position:absolute;left:0;right:0;bottom:0;background:var(--papel-branco);border-top-left-radius:20px;border-top-right-radius:20px;
+    border-top:2px solid var(--ambar);box-shadow:0 -10px 30px rgba(29,58,50,.16);padding:14px 20px 18px;max-height:74%;overflow:auto}
+  .sheet .puxador{width:38px;height:4px;border-radius:99px;background:var(--linha);margin:2px auto 12px}
+  .sheet .glabel{font-size:.66rem;letter-spacing:.16em;text-transform:uppercase;color:var(--ambar);font-weight:600;margin:14px 0 6px}
+  .sheet .glabel:first-of-type{margin-top:2px}
+  .sheet a{display:block;padding:9px 0;color:var(--tinta);text-decoration:none;border-bottom:1px solid var(--linha);font-size:1.02rem}
+  .sheet a.ativo{color:var(--verde-petroleo);font-weight:600}
+  .sheet .frodape{display:flex;gap:16px;flex-wrap:wrap;margin-top:16px}
+  .sheet .frodape a{border:none;color:var(--tinta-suave);font-size:.85rem;opacity:.85;padding:4px 0}
+  .legenda{text-align:center;color:var(--tinta-suave);font-size:.82rem;margin:10px 0 0;font-style:italic;font-family:var(--f-tit)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <span class="assin" style="font-size:2.4rem">Val<span class="p">.</span></span>
+  <h1 style="font-style:italic;margin:8px 0 6px">A navegação nova</h1>
+  <p class="lead">Sem dez pílulas iguais. No desktop, as seções se agrupam por natureza, do socorro ao panorama. No celular, os quatro lugares mais usados ficam numa barra fixa embaixo, e o resto mora em "Mais".</p>
+
+  <!-- DESKTOP -->
+  <div class="rotulo-secao">Desktop · barra superior agrupada</div>
+  <div class="frame">
+    <nav class="dnav">
+      <span class="assin">Val<span class="p">.</span></span>
+      <div class="grupos">
+        <div class="grupo">
+          <span class="glabel">Agora</span>
+          <div class="gitems">
+            <a class="link ativo" href="#">Conversar</a>
+            <a class="link" href="#">Como lidar</a>
+            <a class="link" href="#">Soltar</a>
+          </div>
+        </div>
+        <div class="grupo">
+          <span class="glabel">Pra dentro</span>
+          <div class="gitems">
+            <a class="link" href="#">Olhar pra dentro</a>
+            <a class="link" href="#">Autoamor</a>
+            <a class="link" href="#">Prosperidade</a>
+          </div>
+        </div>
+        <div class="grupo">
+          <span class="glabel">Guardar</span>
+          <div class="gitems">
+            <a class="link" href="#">Diário</a>
+            <a class="link" href="#">Cartas</a>
+          </div>
+        </div>
+        <div class="grupo">
+          <span class="glabel">Panorama</span>
+          <div class="gitems">
+            <a class="link" href="#">Trajetória</a>
+            <a class="link" href="#">Meu Centro</a>
+          </div>
+        </div>
+      </div>
+    </nav>
+    <div class="palco">
+      <h2>Conversar</h2>
+      <p>Estou aqui. Pode falar do jeito que vier.</p>
+    </div>
+    <div class="rodape">
+      <a href="#">Vídeos</a>
+      <a href="#">Privacidade</a>
+      <a href="#">Encerrar visita</a>
+    </div>
+  </div>
+
+  <!-- MOBILE -->
+  <div class="rotulo-secao">Celular · barra inferior fixa + folha "Mais"</div>
+  <div class="fones">
+
+    <!-- Fone 1: barra normal -->
+    <div>
+      <div class="fone">
+        <div class="topo"><span class="assin">Val<span class="p">.</span></span><span style="color:var(--tinta-suave);font-size:.8rem">neutra hoje</span></div>
+        <div class="conteudo">
+          <h2>Diário</h2>
+          <p>o que vale guardar do dia, pra reler num dia cinza</p>
+        </div>
+        <div class="tab">
+          <button>
+            <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M21 11.5a8.4 8.4 0 0 1-8.5 8.4 8.7 8.7 0 0 1-3.8-.9L3 20l1-5.3a8.4 8.4 0 1 1 17 .8z"/></svg>
+            <span class="t">Conversar</span>
+          </button>
+          <button>
+            <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 12h4l2-7 4 14 2-7h6"/></svg>
+            <span class="t">Como lidar</span>
+          </button>
+          <button class="ativo">
+            <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6 3h11l3 3v15H6z"/><path d="M9 8h8M9 12h8M9 16h5"/></svg>
+            <span class="t">Diário</span>
+          </button>
+          <button>
+            <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 17l5-5 3 3 7-8"/></svg>
+            <span class="t">Trajetória</span>
+          </button>
+          <button>
+            <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>
+            <span class="t">Mais</span>
+          </button>
+        </div>
+      </div>
+      <p class="legenda">os quatro mais usados, sempre à mão</p>
+    </div>
+
+    <!-- Fone 2: folha Mais aberta -->
+    <div>
+      <div class="fone">
+        <div class="topo"><span class="assin">Val<span class="p">.</span></span><span style="color:var(--tinta-suave);font-size:.8rem">neutra hoje</span></div>
+        <div class="conteudo" style="filter:saturate(.9);opacity:.5">
+          <h2>Diário</h2>
+          <p>o que vale guardar do dia, pra reler num dia cinza</p>
+        </div>
+        <div class="sheet">
+          <div class="puxador"></div>
+          <div class="glabel">Agora</div>
+          <a href="#">Conversar</a>
+          <a href="#">Como lidar</a>
+          <a href="#">Soltar</a>
+          <div class="glabel">Pra dentro</div>
+          <a href="#">Olhar pra dentro</a>
+          <a href="#">Autoamor</a>
+          <a href="#">Prosperidade</a>
+          <div class="glabel">Guardar</div>
+          <a href="#" class="ativo">Diário</a>
+          <a href="#">Cartas</a>
+          <div class="glabel">Panorama</div>
+          <a href="#">Trajetória</a>
+          <a href="#">Meu Centro</a>
+          <div class="frodape">
+            <a href="#">Vídeos</a>
+            <a href="#">Privacidade</a>
+            <a href="#">Encerrar visita</a>
+          </div>
+        </div>
+      </div>
+      <p class="legenda">"Mais" abre tudo, agrupado igual ao desktop</p>
+    </div>
+
+  </div>
+</div>
+</body>
+</html>
