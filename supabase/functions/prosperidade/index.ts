@@ -10,6 +10,7 @@
 // Deploy: supabase functions deploy prosperidade
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { consumirGeracao, estornarGeracao } from "../_shared/creditos.ts";
 
 // Espelho de src/lib/constitution.js e do CLAUDE.md (fonte de verdade).
 const CONSTITUICAO = `Você é a Val: uma presença que ajuda mulheres a ajustarem a própria vibração, a elevar o estado agora e, com o tempo, tornar o estado bom o padrão. Você não é app de produtividade, metas, performance ou positividade forçada. Você é um lugar de retorno, não de cobrança.
@@ -101,6 +102,11 @@ Deno.serve(async (req) => {
       .maybeSingle();
     if (existente?.texto) return json({ texto: existente.texto, cache: true });
 
+    // Crédito (FASE 2): cache hit não cobra; só a geração real.
+    const authHeader = req.headers.get("Authorization") ?? "";
+    const credito = await consumirGeracao(supabase, 1, "uso:prosperidade");
+    if (!credito.ok) return json({ erro: credito.erro }, 402);
+
     const ctx = await montarContexto(supabase).catch(() => "");
     const memoria = await montarMemoria(supabase).catch(() => "");
     const system = (ctx
@@ -119,11 +125,12 @@ Deno.serve(async (req) => {
     });
     if (!resposta.ok) {
       console.error("Anthropic erro", resposta.status, await resposta.text());
+      await estornarGeracao(authHeader, 1, credito.saldo);
       return json({ erro: "geracao" }, 502);
     }
     const data = await resposta.json();
     const texto = (data.content ?? []).filter((b: any) => b.type === "text").map((b: any) => b.text).join("").trim();
-    if (!texto) return json({ erro: "vazio" }, 502);
+    if (!texto) { await estornarGeracao(authHeader, 1, credito.saldo); return json({ erro: "vazio" }, 502); }
 
     await supabase.from("conteudo_gerado").insert({ tipo: "prosperidade", contexto: { day }, texto });
 

@@ -11,9 +11,11 @@ import Caixa from './sections/Caixa';
 import Entrada from './sections/Entrada';
 import Politica from './sections/Politica';
 import GratidaoWidget from './components/GratidaoWidget';
+import Plano from './components/Plano';
 import { SECOES } from './sections';
 import { db } from './lib/db';
 import { registrarConsentimento } from './lib/consent';
+import { lerAcesso } from './lib/val';
 import { supabase, hasSupabase } from './lib/supabase';
 import { PAUSA_PERGUNTAS } from './data/seed';
 
@@ -150,6 +152,32 @@ export default function App() {
   // Com sessão viva, grava a prova do consentimento (LGPD), uma vez por versão.
   useEffect(() => {
     if (sessao) registrarConsentimento();
+  }, [sessao]);
+
+  // Gating de créditos (FASE 2): a geração bloqueada dispara 'val:plano'. A tela
+  // serena abre por cima; o santuário continua aberto ao fechar.
+  const [plano, setPlano] = useState(null); // null | { motivo }
+  useEffect(() => {
+    const aoPlano = (e) => setPlano({ motivo: e.detail?.motivo ?? 'precisa_plano' });
+    window.addEventListener('val:plano', aoPlano);
+    return () => window.removeEventListener('val:plano', aoPlano);
+  }, []);
+
+  // Aviso sereno perto do fim (princípio 3): sem contador. Só um lembrete único
+  // por ciclo, quando a assinante paga está com pouco crédito.
+  const [aviso, setAviso] = useState(false);
+  useEffect(() => {
+    if (!sessao) return;
+    lerAcesso().then((a) => {
+      if (!a || !a.acessoPago || a.saldo > 12) return;
+      const ciclo = new Date().toISOString().slice(0, 7); // ano-mês
+      const chave = `val.aviso.creditos.${ciclo}`;
+      try {
+        if (localStorage.getItem(chave) === '1') return;
+        localStorage.setItem(chave, '1');
+      } catch { /* ignore */ }
+      setAviso(true);
+    }).catch(() => {});
   }, [sessao]);
 
   async function aoChegar(vibeId) {
@@ -299,6 +327,19 @@ export default function App() {
       </footer>
 
       <GratidaoWidget pedidoAbertura={aberturaGrat} />
+
+      {plano && <Plano motivo={plano.motivo} onFechar={() => setPlano(null)} />}
+
+      {aviso && (
+        <div className="val-fade-in" style={{ position: 'fixed', left: '50%', transform: 'translateX(-50%)', bottom: 90, zIndex: 36, maxWidth: 'min(92vw, 26rem)', background: 'var(--papel-branco)', border: '1px solid var(--linha)', borderTop: '2px solid var(--ambar)', borderRadius: 'var(--raio)', padding: 'var(--espaco-2) var(--espaco-3)', boxShadow: '0 10px 30px rgba(29,58,50,0.16)' }}>
+          <p style={{ margin: 0, color: 'var(--tinta)', fontFamily: 'var(--fonte-titulo)', fontStyle: 'italic' }}>
+            Os seus créditos do mês estão chegando ao fim. Eles renovam no próximo ciclo, sem susto.
+          </p>
+          <button onClick={() => setAviso(false)} style={{ marginTop: 'var(--espaco-1)', background: 'none', border: 'none', color: 'var(--tinta-suave)', cursor: 'pointer', fontStyle: 'italic', fontFamily: 'var(--fonte-titulo)' }}>
+            está bem
+          </button>
+        </div>
+      )}
     </div>
   );
 }

@@ -11,6 +11,7 @@
 // Roda em Deno. Chama a API da Anthropic direto por fetch (sem SDK a empacotar).
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { consumirGeracao, estornarGeracao } from "../_shared/creditos.ts";
 
 // -----------------------------------------------------------------------------
 // A Constituição como system prompt. ESPELHO de src/lib/constitution.js e da
@@ -137,6 +138,11 @@ Deno.serve(async (req) => {
       { global: { headers: { Authorization: req.headers.get("Authorization") ?? "" } } },
     );
 
+    // Crédito (FASE 2): consome 1 antes de gerar. Bloqueia com serenidade.
+    const authHeader = req.headers.get("Authorization") ?? "";
+    const credito = await consumirGeracao(supabase, 1, "uso:conversar");
+    if (!credito.ok) return json({ erro: credito.erro }, 402);
+
     const contexto = await montarContexto(supabase, chegada).catch(() => "");
     const memoria = await montarMemoria(supabase).catch(() => "");
     const system = (contexto
@@ -163,6 +169,7 @@ Deno.serve(async (req) => {
 
     if (!resposta.ok) {
       console.error("Anthropic erro", resposta.status, await resposta.text());
+      await estornarGeracao(authHeader, 1, credito.saldo);
       return json({ erro: "geracao" }, 502);
     }
 

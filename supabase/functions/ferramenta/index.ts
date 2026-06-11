@@ -16,6 +16,7 @@
 // Deploy: supabase functions deploy ferramenta  (a Action publica automaticamente)
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { consumirGeracao, estornarGeracao } from "../_shared/creditos.ts";
 
 // Modelo de embeddings embutido no runtime do Supabase (sem chave externa).
 declare const Supabase: any;
@@ -104,6 +105,12 @@ Deno.serve(async (req) => {
       } catch { /* segue para gerar */ }
     }
 
+    // Crédito (FASE 2): geração longa, custa 2. O cache por similaridade acima
+    // não cobra (reaproveita ferramenta de outra). Só a geração nova consome.
+    const authHeader = req.headers.get("Authorization") ?? "";
+    const credito = await consumirGeracao(userClient, 2, "uso:ferramenta");
+    if (!credito.ok) return json({ erro: credito.erro }, 402);
+
     // 3. Gera na voz da Val.
     const resposta = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
@@ -117,14 +124,16 @@ Deno.serve(async (req) => {
     });
     if (!resposta.ok) {
       console.error("Anthropic erro", resposta.status, await resposta.text());
+      await estornarGeracao(authHeader, 2, credito.saldo);
       return json({ erro: "geracao" }, 502);
     }
     const data = await resposta.json();
     const bruto = (data.content ?? []).filter((b: any) => b.type === "text").map((b: any) => b.text).join("").trim();
 
     let ferramenta: any;
-    try { ferramenta = JSON.parse(limparJSON(bruto)); } catch { return json({ erro: "parse" }, 502); }
+    try { ferramenta = JSON.parse(limparJSON(bruto)); } catch { await estornarGeracao(authHeader, 2, credito.saldo); return json({ erro: "parse" }, 502); }
     if (!ferramenta?.situacao || !ferramenta?.diagnostico || !Array.isArray(ferramenta?.passos) || !ferramenta?.pergunta) {
+      await estornarGeracao(authHeader, 2, credito.saldo);
       return json({ erro: "formato" }, 502);
     }
     // Sanea os caminhos: só os válidos, no máximo 2; cai no Conversar se vazio.
