@@ -155,13 +155,13 @@ revoke all on function conceder_creditos(uuid, int, text, text) from public, ano
 -- =============================================================================
 -- Degustação na chegada (modelo POR DIAS): ao criar a usuária, abre a assinatura
 -- em 'degustacao' com a janela de acesso pleno. Créditos só entram com o plano
--- pago. DEGUSTAÇÃO = 7 dias (ajustável: troque o interval; 7 ou 14 são os usuais).
+-- pago. DEGUSTAÇÃO = 3 dias (ajustável: troque o interval).
 -- =============================================================================
 create or replace function ao_criar_conceder_degustacao()
 returns trigger language plpgsql security definer set search_path = public as $$
 begin
   insert into assinaturas (user_id, status, periodo_fim)
-    values (new.id, 'degustacao', now() + interval '7 days')
+    values (new.id, 'degustacao', now() + interval '3 days')
     on conflict (user_id) do nothing;
   insert into creditos (user_id, saldo) values (new.id, 0)
     on conflict (user_id) do nothing;
@@ -172,3 +172,24 @@ drop trigger if exists ao_criar_degustacao on auth.users;
 create trigger ao_criar_degustacao
   after insert on auth.users
   for each row execute function ao_criar_conceder_degustacao();
+
+-- =============================================================================
+-- Instrumentação da degustação (para aprender se 3 dias convertem ou cortam
+-- cedo). Por mulher: início e fim da janela, se já expirou, quantos dias ela de
+-- fato usou (visitas distintas na janela) e quantas gerações fez na degustação.
+-- Consultar pelo painel (SQL Editor / admin), que roda com acesso total.
+-- =============================================================================
+create or replace view degustacao_metricas as
+select
+  a.user_id,
+  a.criado_em                              as inicio,
+  a.periodo_fim                            as fim,
+  (now() > a.periodo_fim)                  as expirou,
+  (a.status <> 'degustacao')               as virou_assinante,
+  (select count(*) from creditos_lancamentos l
+     where l.user_id = a.user_id and l.motivo like 'degustacao:%') as geracoes,
+  (select count(distinct s.day) from sessoes s
+     where s.user_id = a.user_id
+       and s.created_at >= a.criado_em
+       and s.created_at <= a.periodo_fim)  as dias_usados
+from assinaturas a;
