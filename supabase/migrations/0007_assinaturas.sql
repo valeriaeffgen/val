@@ -87,14 +87,40 @@ create policy evt_dona_select    on eventos_pagamento    for select using (user_
 -- funções Edge) e as funções security definer abaixo cuidam das escritas.
 
 -- =============================================================================
--- Débito atômico do PRÓPRIO saldo. Chamado pelas funções Edge de geração com o
--- JWT da mulher. Retorna o novo saldo, ou -1 se não houver créditos suficientes.
--- (Cache hit NÃO chama isto: só debita quando a Val realmente gera.)
+-- Consumo de uma geração. Chamado pelas funções Edge com o JWT da mulher, ANTES
+-- de chamar o modelo (e só em cache miss). Decide pelo estado da assinatura:
+--   * em degustação válida (por dias)        -> liberado, sem debitar  (retorna 999999)
+--   * com plano vigente e saldo              -> debita, retorna o novo saldo (>= 0)
+--   * com plano vigente mas sem saldo         -> -1  (créditos do mês acabaram)
+--   * degustação expirada e sem plano         -> -2  (precisa de plano)
+-- (Cache hit NÃO chama isto: só consome quando a Val realmente gera.)
 -- =============================================================================
-create or replace function debitar_creditos(custo int, motivo text, ref text default null)
+create or replace function consumir_geracao(custo int, motivo text, ref text default null)
 returns int language plpgsql security definer set search_path = public as $$
-declare novo int;
+declare
+  a record;
+  novo int;
+  em_degustacao boolean;
+  acesso_pago boolean;
 begin
+  select status, periodo_fim into a from assinaturas where user_id = auth.uid();
+
+  em_degustacao := a.status = 'degustacao' and a.periodo_fim is not null and a.periodo_fim > now();
+  acesso_pago   := a.status = 'ativa' or (a.status = 'cancelada' and a.periodo_fim is not null and a.periodo_fim > now());
+
+  -- Degustação por dias: livre enquanto dentro da janela, sem debitar.
+  if em_degustacao then
+    insert into creditos_lancamentos (user_id, delta, motivo, ref)
+      values (auth.uid(), 0, 'degustacao:' || motivo, ref);
+    return 999999;
+  end if;
+
+  -- Nem degustação válida, nem plano vigente: precisa de plano.
+  if not acesso_pago then
+    return -2;
+  end if;
+
+  -- Plano vigente: debita o custo de forma atômica.
   if custo <= 0 then
     return coalesce((select saldo from creditos where user_id = auth.uid()), 0);
   end if;
@@ -102,17 +128,17 @@ begin
    where user_id = auth.uid() and saldo >= custo
   returning saldo into novo;
   if novo is null then
-    return -1;                                  -- sem créditos suficientes
+    return -1;                                  -- créditos do mês acabaram
   end if;
   insert into creditos_lancamentos (user_id, delta, motivo, ref)
-  values (auth.uid(), -custo, motivo, ref);
+    values (auth.uid(), -custo, motivo, ref);
   return novo;
 end; $$;
-revoke all on function debitar_creditos(int, text, text) from public, anon;
-grant execute on function debitar_creditos(int, text, text) to authenticated;
+revoke all on function consumir_geracao(int, text, text) from public, anon;
+grant execute on function consumir_geracao(int, text, text) to authenticated;
 
--- Concessão de créditos (degustação inicial, pacote do pagamento confirmado).
--- Service role apenas (webhook), nunca a cliente.
+-- Concessão de créditos (pacote do pagamento confirmado). Service role apenas
+-- (webhook), nunca a cliente.
 create or replace function conceder_creditos(p_user uuid, qtd int, motivo text, ref text default null)
 returns int language plpgsql security definer set search_path = public as $$
 declare novo int;
@@ -127,19 +153,18 @@ end; $$;
 revoke all on function conceder_creditos(uuid, int, text, text) from public, anon, authenticated;
 
 -- =============================================================================
--- Degustação na chegada (modelo "por uso"): ao criar a usuária, abre a
--- assinatura em 'degustacao' e concede os créditos de boas-vindas.
--- VALOR A CONFIRMAR nas decisões (aqui, 30 ≈ uma boa semana de uso real).
+-- Degustação na chegada (modelo POR DIAS): ao criar a usuária, abre a assinatura
+-- em 'degustacao' com a janela de acesso pleno. Créditos só entram com o plano
+-- pago. DEGUSTAÇÃO = 7 dias (ajustável: troque o interval; 7 ou 14 são os usuais).
 -- =============================================================================
 create or replace function ao_criar_conceder_degustacao()
 returns trigger language plpgsql security definer set search_path = public as $$
 begin
-  insert into assinaturas (user_id, status) values (new.id, 'degustacao')
+  insert into assinaturas (user_id, status, periodo_fim)
+    values (new.id, 'degustacao', now() + interval '7 days')
     on conflict (user_id) do nothing;
-  insert into creditos (user_id, saldo) values (new.id, 30)
+  insert into creditos (user_id, saldo) values (new.id, 0)
     on conflict (user_id) do nothing;
-  insert into creditos_lancamentos (user_id, delta, motivo)
-    values (new.id, 30, 'degustacao');
   return new;
 end; $$;
 
