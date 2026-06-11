@@ -38,14 +38,13 @@
   .masthead .assin{font-size:2.7rem;line-height:1}
   .masthead .estado{position:absolute;right:2px;top:50%;transform:translateY(-50%);
     color:var(--tinta-suave);font-size:.82rem;font-style:italic;font-family:var(--f-tit)}
-  /* menu como linha fina embaixo: quatro grupos equilibrados na largura */
-  .menu-linha{display:flex;align-items:flex-start;border-top:1px solid var(--linha)}
-  .grupo{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;
-    padding:12px 14px;border-right:1px solid var(--linha);text-align:center}
-  .grupo:last-child{border-right:none}
-  .grupo .glabel{font-size:.64rem;letter-spacing:.18em;text-transform:uppercase;color:var(--ambar);font-weight:600}
-  .grupo .gitems{display:flex;gap:14px;flex-wrap:wrap;justify-content:center}
-  .link{font-size:1rem;color:var(--tinta-suave);text-decoration:none;padding:2px 0;white-space:nowrap;border-bottom:2px solid transparent}
+  /* menu: UMA linha fina centralizada. Grupos só pelo ritmo (mais espaço entre
+     grupos que dentro deles), com um ponto âmbar discreto como separador. */
+  .menu-linha{display:flex;justify-content:center;align-items:center;flex-wrap:nowrap;
+    border-top:1px solid var(--linha);padding:11px 20px}
+  .grp{display:flex;align-items:center;gap:18px}
+  .sep{color:var(--ambar);opacity:.7;margin:0 24px;user-select:none}
+  .link{font-size:.92rem;color:var(--tinta-suave);text-decoration:none;padding:2px 0;white-space:nowrap;border-bottom:2px solid transparent}
   .link:hover{color:var(--verde-petroleo)}
   .link.ativo{color:var(--verde-petroleo);font-weight:600;border-bottom-color:var(--ambar)}
 
@@ -103,36 +102,27 @@
         <span class="estado">neutra hoje</span>
       </div>
       <div class="menu-linha">
-        <div class="grupo">
-          <span class="glabel">Agora</span>
-          <div class="gitems">
-            <a class="link ativo" href="#">Conversar</a>
-            <a class="link" href="#">Como lidar</a>
-            <a class="link" href="#">Soltar</a>
-          </div>
-        </div>
-        <div class="grupo">
-          <span class="glabel">Pra dentro</span>
-          <div class="gitems">
-            <a class="link" href="#">Olhar pra dentro</a>
-            <a class="link" href="#">Autoamor</a>
-            <a class="link" href="#">Prosperidade</a>
-          </div>
-        </div>
-        <div class="grupo">
-          <span class="glabel">Guardar</span>
-          <div class="gitems">
-            <a class="link" href="#">Diário</a>
-            <a class="link" href="#">Cartas</a>
-          </div>
-        </div>
-        <div class="grupo">
-          <span class="glabel">Panorama</span>
-          <div class="gitems">
-            <a class="link" href="#">Trajetória</a>
-            <a class="link" href="#">Meu Centro</a>
-          </div>
-        </div>
+        <span class="grp">
+          <a class="link ativo" href="#">Conversar</a>
+          <a class="link" href="#">Como lidar</a>
+          <a class="link" href="#">Soltar</a>
+        </span>
+        <span class="sep">·</span>
+        <span class="grp">
+          <a class="link" href="#">Pra dentro</a>
+          <a class="link" href="#">Autoamor</a>
+          <a class="link" href="#">Prosperidade</a>
+        </span>
+        <span class="sep">·</span>
+        <span class="grp">
+          <a class="link" href="#">Diário</a>
+          <a class="link" href="#">Cartas</a>
+        </span>
+        <span class="sep">·</span>
+        <span class="grp">
+          <a class="link" href="#">Trajetória</a>
+          <a class="link" href="#">Meu Centro</a>
+        </span>
       </div>
     </nav>
     <div class="palco">
