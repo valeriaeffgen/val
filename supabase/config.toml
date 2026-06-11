@@ -1,0 +1,7 @@
+project_id = "rnysmlbfeovevapxyvpf"
+
+# O webhook do Asaas chega sem JWT do Supabase (é o Asaas chamando, não a
+# usuária). A autenticidade é garantida pelo ASAAS_WEBHOOK_TOKEN dentro da
+# função. As demais funções mantêm verify_jwt ligado (padrão).
+[functions.asaas-webhook]
+verify_jwt = false

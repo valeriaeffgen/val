@@ -1,9 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Secao from '../components/Secao';
 import { db } from '../lib/db';
 import { usePerfil } from '../lib/useColecao';
 import { vincularEmail, sair, apagarMinhaConta } from '../lib/supabase';
 import { exportarRegistros } from '../lib/exportar';
+import { lerAcesso } from '../lib/val';
+import { cancelarAssinatura } from '../lib/assinatura';
 
 /*
  * Meu Centro (seção 6) — valores, o que já é (conquistas), o que importa agora
@@ -61,8 +63,77 @@ export default function MeuCentro({ sessao, onNavegar }) {
         ))}
       </div>
 
+      <Assinatura />
       <Privacidade onNavegar={onNavegar} />
     </Secao>
+  );
+}
+
+// Sua assinatura (FASE 3): só aparece pra quem tem plano vigente. Cancelamento
+// digno, um toque, confirmação calma, acesso até o fim do período pago.
+function Assinatura() {
+  const [acesso, setAcesso] = useState(null);
+  const [fase, setFase] = useState('inicio'); // inicio | confirmando | cancelando | feito | erro
+
+  useEffect(() => {
+    lerAcesso().then(setAcesso).catch(() => {});
+  }, []);
+
+  // Só mostra para assinatura paga vigente (ativa ou já cancelada dentro do prazo).
+  if (!acesso || !acesso.acessoPago) return null;
+  const jaCancelada = acesso.status === 'cancelada';
+
+  async function cancelar() {
+    setFase('cancelando');
+    try {
+      await cancelarAssinatura();
+      setFase('feito');
+    } catch {
+      setFase('erro');
+    }
+  }
+
+  return (
+    <div className="card" style={{ marginTop: 'var(--espaco-3)' }}>
+      <h3 style={{ marginTop: 0 }}>Sua assinatura</h3>
+
+      {fase === 'feito' || jaCancelada ? (
+        <p style={{ color: 'var(--tinta-suave)', margin: 0 }}>
+          A renovação está desligada. Você segue com a Val até o fim do período já pago, sem pressa.
+        </p>
+      ) : fase === 'confirmando' ? (
+        <>
+          <p style={{ color: 'var(--tinta)', marginTop: 0 }}>
+            Posso desligar a renovação. Você continua com tudo até o fim do período que já pagou, e nada some.
+          </p>
+          <div style={{ display: 'flex', gap: 'var(--espaco-1)', flexWrap: 'wrap' }}>
+            <button className="botao-suave" onClick={cancelar}>encerrar a renovação</button>
+            <button className="botao-suave" onClick={() => setFase('inicio')}>deixa como está</button>
+          </div>
+        </>
+      ) : fase === 'cancelando' ? (
+        <p style={{ color: 'var(--tinta-suave)', fontStyle: 'italic', fontFamily: 'var(--fonte-titulo)', margin: 0 }}>
+          Um instante…
+        </p>
+      ) : (
+        <>
+          <p style={{ color: 'var(--tinta-suave)', marginTop: 0, fontSize: 'var(--corpo-pequeno)' }}>
+            Você está com a Val, 300 créditos por mês. Pode encerrar quando quiser, sem labirinto.
+          </p>
+          <button
+            onClick={() => setFase('confirmando')}
+            style={{ background: 'none', border: 'none', padding: 0, color: 'var(--tinta-suave)', fontStyle: 'italic', fontFamily: 'var(--fonte-titulo)', cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: 3 }}
+          >
+            encerrar a renovação
+          </button>
+          {fase === 'erro' && (
+            <p style={{ color: 'var(--tinta-suave)', fontSize: 'var(--corpo-pequeno)', marginBottom: 0 }}>
+              Não consegui agora. Tenta de novo daqui a pouco.
+            </p>
+          )}
+        </>
+      )}
+    </div>
   );
 }
 

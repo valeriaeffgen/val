@@ -154,6 +154,21 @@ export default function App() {
     if (sessao) registrarConsentimento();
   }, [sessao]);
 
+  // Volta do checkout do Asaas (FASE 3): um aceno sereno enquanto o webhook
+  // confirma o pagamento e libera os créditos (segundos).
+  const [pagoOk, setPagoOk] = useState(false);
+  useEffect(() => {
+    try {
+      const p = new URLSearchParams(window.location.search);
+      if (p.has('pago')) {
+        setPagoOk(true);
+        p.delete('pago');
+        const limpo = window.location.pathname + (p.toString() ? `?${p}` : '');
+        window.history.replaceState({}, '', limpo);
+      }
+    } catch { /* ignore */ }
+  }, []);
+
   // Gating de créditos (FASE 2): a geração bloqueada dispara 'val:plano'. A tela
   // serena abre por cima; o santuário continua aberto ao fechar.
   const [plano, setPlano] = useState(null); // null | { motivo }
@@ -329,6 +344,17 @@ export default function App() {
       <GratidaoWidget pedidoAbertura={aberturaGrat} />
 
       {plano && <Plano motivo={plano.motivo} onFechar={() => setPlano(null)} />}
+
+      {pagoOk && (
+        <div className="val-fade-in" style={{ position: 'fixed', left: '50%', transform: 'translateX(-50%)', bottom: 90, zIndex: 37, maxWidth: 'min(92vw, 28rem)', background: 'var(--papel-branco)', border: '1px solid var(--linha)', borderTop: '2px solid var(--ambar)', borderRadius: 'var(--raio)', padding: 'var(--espaco-2) var(--espaco-3)', boxShadow: '0 10px 30px rgba(29,58,50,0.16)' }}>
+          <p style={{ margin: 0, color: 'var(--tinta)', fontFamily: 'var(--fonte-titulo)', fontStyle: 'italic' }}>
+            Recebi. Estou confirmando o seu pagamento, os créditos chegam em instantes.
+          </p>
+          <button onClick={() => setPagoOk(false)} style={{ marginTop: 'var(--espaco-1)', background: 'none', border: 'none', color: 'var(--tinta-suave)', cursor: 'pointer', fontStyle: 'italic', fontFamily: 'var(--fonte-titulo)' }}>
+            que bom
+          </button>
+        </div>
+      )}
 
       {aviso && (
         <div className="val-fade-in" style={{ position: 'fixed', left: '50%', transform: 'translateX(-50%)', bottom: 90, zIndex: 36, maxWidth: 'min(92vw, 26rem)', background: 'var(--papel-branco)', border: '1px solid var(--linha)', borderTop: '2px solid var(--ambar)', borderRadius: 'var(--raio)', padding: 'var(--espaco-2) var(--espaco-3)', boxShadow: '0 10px 30px rgba(29,58,50,0.16)' }}>
