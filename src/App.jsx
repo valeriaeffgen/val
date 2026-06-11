@@ -90,7 +90,7 @@ function montarResposta(vibe, elevadores, palavras) {
     elevadores: [],
     ancorar: true,
     acoes: [
-      { label: 'Registrar gratidão', tipo: 'diario', cat: 'beleza' },
+      { label: 'Registrar gratidão', tipo: 'gratidao' },
     ],
   };
 }
@@ -217,6 +217,7 @@ export default function App() {
 
   function onAcao(a) {
     if (a.tipo === 'pausa') return abrirPausa();
+    if (a.tipo === 'gratidao') return pedirGratidao(); // abre o convite que grava de verdade
     if (a.tipo === 'diario') return navegar({ secao: 'diario', cat: a.cat });
     if (a.tipo === 'chat') return navegar({ secao: 'conversar', mensagem: a.msg });
     navegar({ secao: a.secao });
