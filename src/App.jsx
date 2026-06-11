@@ -224,13 +224,12 @@ export default function App() {
   }
 
   async function ancorar(texto) {
+    // Guarda nos elevadores (Meu Centro) e FICA na chegada: a Chegada confirma.
     const perfil = await db.perfil().catch(() => ({ elevadores: [] }));
     const lista = perfil?.elevadores ?? [];
     if (!lista.some((e) => e.toLowerCase() === texto.toLowerCase())) {
       await db.salvarPerfil({ elevadores: [...lista, texto] }).catch(() => {});
     }
-    setResposta(null);
-    setSecaoId('conversar');
   }
 
   async function aoSair(saidaId) {

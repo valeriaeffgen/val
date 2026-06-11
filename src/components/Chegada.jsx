@@ -9,7 +9,17 @@ import OfertaMuralGratidao from './OfertaMuralGratidao';
  */
 export default function Chegada({ resposta, onAcao, onAncorar, onNavegar }) {
   const [elev, setElev] = useState('');
+  const [ancorado, setAncorado] = useState(false);
   if (!resposta) return null;
+
+  async function ancorarElev(ev) {
+    ev.preventDefault();
+    const t = elev.trim();
+    if (!t) return;
+    await onAncorar(t);
+    setElev('');
+    setAncorado(true);
+  }
 
   return (
     <section style={{ maxWidth: 'var(--largura-leitura)', margin: '0 auto', padding: 'var(--espaco-4) var(--espaco-3)' }}>
@@ -43,7 +53,7 @@ export default function Chegada({ resposta, onAcao, onAncorar, onNavegar }) {
       {/* Ancorar a fórmula (elevada) */}
       {resposta.ancorar && (
         <form
-          onSubmit={(ev) => { ev.preventDefault(); if (elev.trim()) { onAncorar(elev.trim()); setElev(''); } }}
+          onSubmit={ancorarElev}
           className="card"
           style={{ display: 'grid', gap: 'var(--espaco-2)', marginTop: 'var(--espaco-3)' }}
         >
@@ -51,12 +61,17 @@ export default function Chegada({ resposta, onAcao, onAncorar, onNavegar }) {
           <div style={{ display: 'flex', gap: 'var(--espaco-1)' }}>
             <input
               value={elev}
-              onChange={(e) => setElev(e.target.value)}
+              onChange={(e) => { setElev(e.target.value); if (ancorado) setAncorado(false); }}
               placeholder="O que me elevou hoje…"
               style={{ flex: 1, border: '1px solid var(--linha)', borderRadius: 'var(--raio-sm)', padding: '10px var(--espaco-2)', background: 'var(--papel)' }}
             />
             <button type="submit" className="botao-suave">ancorar</button>
           </div>
+          {ancorado && (
+            <p className="val-fade-in" style={{ margin: 0, color: 'var(--ambar)', fontFamily: 'var(--fonte-titulo)', fontStyle: 'italic' }}>
+              Guardado nos seus elevadores. Vou te lembrar dele.
+            </p>
+          )}
         </form>
       )}
 
