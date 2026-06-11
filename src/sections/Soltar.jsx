@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import Secao from '../components/Secao';
 import { db } from '../lib/db';
+import { formatarDia } from '../lib/datas';
 import { useColecao } from '../lib/useColecao';
 
 /*
@@ -42,7 +43,8 @@ export default function Soltar() {
           <ul style={{ listStyle: 'none', padding: 0, display: 'grid', gap: 'var(--espaco-1)' }}>
             {itens.map((it) => (
               <li key={it.id} className="card" style={{ padding: 'var(--espaco-2)' }}>
-                {it.text}
+                <p style={{ margin: 0 }}>{it.text}</p>
+                <p style={{ margin: '4px 0 0', color: 'var(--tinta-suave)', fontSize: 'var(--corpo-pequeno)' }}>{formatarDia(it.day)}</p>
               </li>
             ))}
           </ul>

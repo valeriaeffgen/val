@@ -2,6 +2,7 @@ import { useState } from 'react';
 import Secao from '../components/Secao';
 import { db } from '../lib/db';
 import { hoje } from '../lib/storage';
+import { formatarDia } from '../lib/datas';
 import { useColecao } from '../lib/useColecao';
 import { CATEGORIAS_DIARIO } from '../data/seed';
 
@@ -25,7 +26,6 @@ export default function Diario({ catInicial, onNavegar }) {
         </button>
       </div>
       <Elogios />
-      <GestoAutoamor />
       <Categorias catInicial={catInicial} />
     </Secao>
   );
@@ -93,44 +93,6 @@ function Elogios() {
   );
 }
 
-// --- Gesto de autoamor (mesma fonte do Autoamor: diario cat 'autoamor') -------
-function GestoAutoamor() {
-  const diario = useColecao('diario');
-  const gestoHoje = diario.find((d) => d.cat === 'autoamor' && d.day === hoje());
-  const [texto, setTexto] = useState('');
-
-  function registrar(e) {
-    e.preventDefault();
-    const t = texto.trim();
-    if (!t) return;
-    db.adicionar('diario', { cat: 'autoamor', text: t }).catch(() => {});
-    setTexto('');
-  }
-
-  return (
-    <div className="card-escuro" style={{ marginBottom: 'var(--espaco-3)' }}>
-      <h3 style={{ fontStyle: 'italic', marginTop: 0 }}>Gesto de autoamor</h3>
-      {gestoHoje ? (
-        <p style={{ color: 'var(--sobre-escuro-suave)', margin: 0 }}>
-          Hoje você se deu: <span style={{ color: 'var(--sobre-escuro)' }}>{gestoHoje.text}</span>
-        </p>
-      ) : (
-        <form onSubmit={registrar} style={{ display: 'flex', gap: 'var(--espaco-1)' }}>
-          <input
-            value={texto}
-            onChange={(e) => setTexto(e.target.value)}
-            placeholder="Escreva o gesto de hoje..."
-            style={{ flex: 1, border: '1px solid rgba(239,231,214,0.3)', background: 'rgba(0,0,0,0.12)', color: 'var(--sobre-escuro)', borderRadius: 'var(--raio-sm)', padding: '10px var(--espaco-2)' }}
-          />
-          <button type="submit" className="botao-suave" style={{ color: 'var(--sobre-escuro)', borderColor: 'rgba(239,231,214,0.4)' }}>
-            registrar
-          </button>
-        </form>
-      )}
-    </div>
-  );
-}
-
 // --- Categorias de gratidão/perspectiva ---------------------------------------
 function Categorias({ catInicial }) {
   const diario = useColecao('diario');
@@ -191,7 +153,10 @@ function Categorias({ catInicial }) {
         <ul style={{ listStyle: 'none', padding: 0, display: 'grid', gap: 'var(--espaco-1)' }}>
           {acervo.map((d) => (
             <li key={d.id} className="card" style={{ padding: 'var(--espaco-2)' }}>
-              <span style={{ color: 'var(--ambar)', fontSize: 'var(--corpo-pequeno)' }}>{LABEL[d.cat]}</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', gap: 'var(--espaco-2)', alignItems: 'baseline' }}>
+                <span style={{ color: 'var(--ambar)', fontSize: 'var(--corpo-pequeno)' }}>{LABEL[d.cat]}</span>
+                <span style={{ color: 'var(--tinta-suave)', fontSize: 'var(--corpo-pequeno)' }}>{formatarDia(d.day)}</span>
+              </div>
               <p style={{ margin: '4px 0 0' }}>{d.text}</p>
             </li>
           ))}

@@ -5,11 +5,11 @@ import { GRATIDAO_SUGESTOES } from '../data/seed';
 /*
  * Gratidão — comportamento transversal, não seção (princípios 1, 2 e 7).
  *
- * Presença, não cobrança: uma faixa discreta fica fixa no rodapé, presente no
- * app todo. Recolhida, é só um lembrete leve (coração + pergunta), não pesa. Ao
- * passar o mouse (ou tocar), ela se abre e revela o campo. Gatilhos contextuais
- * (chegar pesada, reclamar) pedem a abertura, sem nunca virar modal no meio da
- * tela.
+ * Presença, não cobrança: um toast flutuante e discreto vive no canto inferior,
+ * nunca cortando o conteúdo. Recolhido, é só um coração leve com um lembrete. Ao
+ * passar o mouse (ou tocar), abre num cartãozinho com o campo. Gatilhos
+ * contextuais (chegar pesada, reclamar) pedem a abertura, sem nunca virar modal
+ * no meio da tela.
  *
  * É CONVITE, nunca cobrança: ela ignora sem culpa, sem "você ainda não registrou
  * hoje". Se não achar motivo, a Val oferece o óbvio que se esquece, concreto e
@@ -32,8 +32,7 @@ export default function GratidaoWidget({ pedidoAbertura = 0 }) {
   const [guardado, setGuardado] = useState(false);
   const [focado, setFocado] = useState(false);
 
-  // Gatilhos contextuais (chegar pesada, reclamar) pedem a abertura da faixa.
-  // useState lazy-compara: só abre quando o pedido muda de fato.
+  // Gatilhos contextuais (chegar pesada, reclamar) pedem a abertura do toast.
   const [ultimoPedido, setUltimoPedido] = useState(0);
   if (pedidoAbertura !== ultimoPedido) {
     setUltimoPedido(pedidoAbertura);
@@ -47,7 +46,6 @@ export default function GratidaoWidget({ pedidoAbertura = 0 }) {
     setTexto('');
     setSugestao(null);
     setGuardado(true);
-    // Um respiro de confirmação, depois recolhe de volta.
     setTimeout(() => { setGuardado(false); setAberto(false); }, 1800);
   }
 
@@ -63,81 +61,80 @@ export default function GratidaoWidget({ pedidoAbertura = 0 }) {
   }
 
   return (
-    <div
-      onMouseEnter={() => setAberto(true)}
-      onMouseLeave={aoSair}
-      style={{
-        position: 'fixed', left: 0, right: 0, bottom: 0, zIndex: 40,
-        background: 'var(--papel-branco)', borderTop: '2px solid var(--ambar)',
-        boxShadow: '0 -6px 24px rgba(29,58,50,0.10)',
-      }}
-    >
-      <div style={{ maxWidth: 760, margin: '0 auto', padding: aberto ? 'var(--espaco-2) var(--espaco-3) var(--espaco-3)' : '0 var(--espaco-3)' }}>
-        {!aberto ? (
-          // --- Recolhida: o lembrete leve, a faixa inteira convida ao toque. ---
-          <button
-            onClick={() => setAberto(true)}
-            aria-label="Registrar uma gratidão"
-            style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 'var(--espaco-2)', background: 'none', border: 'none', cursor: 'pointer', padding: '12px 0', textAlign: 'left' }}
-          >
-            <span aria-hidden style={{ color: 'var(--ambar)', fontSize: '1.25rem', lineHeight: 1 }}>♡</span>
-            <span style={{ fontFamily: 'var(--fonte-titulo)', fontStyle: 'italic', fontSize: 'var(--titulo-sm)', color: 'var(--verde-petroleo)' }}>
-              Que coisa pequena, agora, merece um obrigada?
-            </span>
-          </button>
-        ) : guardado ? (
-          <p style={{ fontFamily: 'var(--fonte-titulo)', fontStyle: 'italic', fontSize: 'var(--titulo-sm)', color: 'var(--verde-petroleo)', margin: '12px 0' }}>
-            Guardado. Fica com você.
-          </p>
-        ) : !sugestao ? (
-          // --- Aberta: o convite com o campo. ---
-          <>
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: 'var(--espaco-1)', margin: '4px 0' }}>
-              <span aria-hidden style={{ color: 'var(--ambar)', fontSize: '1.1rem' }}>♡</span>
-              <p style={{ fontFamily: 'var(--fonte-titulo)', fontStyle: 'italic', fontSize: 'var(--titulo-sm)', color: 'var(--verde-petroleo)', margin: 0 }}>
+    <div className="val-grat" onMouseEnter={() => setAberto(true)} onMouseLeave={aoSair}>
+      {!aberto ? (
+        // --- Recolhido: o coração leve, no canto. ---
+        <button
+          onClick={() => setAberto(true)}
+          aria-label="Registrar uma gratidão"
+          style={{
+            display: 'flex', alignItems: 'center', gap: 8, background: 'var(--papel-branco)',
+            border: '1px solid var(--linha)', borderRadius: 999, padding: '9px 16px', cursor: 'pointer',
+            boxShadow: '0 6px 20px rgba(29,58,50,0.12)',
+          }}
+        >
+          <span aria-hidden style={{ color: 'var(--ambar)', fontSize: '1.2rem', lineHeight: 1 }}>♡</span>
+          <span style={{ fontFamily: 'var(--fonte-titulo)', fontStyle: 'italic', color: 'var(--verde-petroleo)', fontSize: 'var(--corpo-pequeno)' }}>
+            uma gratidão?
+          </span>
+        </button>
+      ) : (
+        // --- Aberto: o cartãozinho com o convite. ---
+        <div
+          className="val-fade-in"
+          style={{
+            position: 'relative', width: 'min(88vw, 21rem)', background: 'var(--papel-branco)',
+            border: '1px solid var(--linha)', borderTop: '3px solid var(--ambar)', borderRadius: 'var(--raio)',
+            padding: 'var(--espaco-2) var(--espaco-3) var(--espaco-3)', boxShadow: '0 12px 34px rgba(29,58,50,0.18)',
+          }}
+        >
+          <button onClick={recolher} aria-label="recolher" style={{ position: 'absolute', top: 6, right: 10, background: 'none', border: 'none', color: 'var(--tinta-suave)', cursor: 'pointer', fontSize: '1.2rem', lineHeight: 1 }}>×</button>
+
+          {guardado ? (
+            <p style={{ fontFamily: 'var(--fonte-titulo)', fontStyle: 'italic', fontSize: 'var(--titulo-sm)', color: 'var(--verde-petroleo)', margin: '8px 1.2rem 4px 0' }}>
+              Guardado. Fica com você.
+            </p>
+          ) : !sugestao ? (
+            <>
+              <p style={{ fontFamily: 'var(--fonte-titulo)', fontStyle: 'italic', fontSize: 'var(--titulo-sm)', color: 'var(--verde-petroleo)', margin: '4px 1.2rem 0 0' }}>
                 Que coisa pequena, agora, merece um obrigada?
               </p>
-              <button onClick={recolher} aria-label="recolher" style={{ marginLeft: 'auto', background: 'none', border: 'none', color: 'var(--tinta-suave)', cursor: 'pointer', fontSize: '1.25rem', lineHeight: 1 }}>×</button>
-            </div>
-            <p style={{ color: 'var(--tinta-suave)', fontSize: 'var(--corpo-pequeno)', margin: '0 0 var(--espaco-2)' }}>
-              Se não vier, tudo bem.
-            </p>
-            <div style={{ display: 'flex', gap: 'var(--espaco-1)' }}>
-              <input
-                value={texto}
-                onChange={(e) => setTexto(e.target.value)}
-                onFocus={() => setFocado(true)}
-                onBlur={() => setFocado(false)}
-                onKeyDown={(e) => { if (e.key === 'Enter') guardar(); }}
-                placeholder="uma coisa simples…"
-                autoFocus
-                style={{ flex: 1, minWidth: 0, border: '1px solid var(--linha)', borderRadius: 'var(--raio-sm)', padding: '10px var(--espaco-2)', background: 'var(--papel)' }}
-              />
-              <button className="botao" onClick={() => guardar()} disabled={!texto.trim()} aria-label="guardar" style={{ padding: '10px 18px' }}>→</button>
-            </div>
-            <button onClick={() => setSugestao(umaSugestao())} style={{ ...linkInline, marginTop: 'var(--espaco-2)' }}>
-              não acho um motivo
-            </button>
-          </>
-        ) : (
-          // --- Aberta: a sugestão humilde, quando ela não acha um motivo. ---
-          <>
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: 'var(--espaco-1)' }}>
-              <p style={{ color: 'var(--tinta-suave)', fontSize: 'var(--corpo-pequeno)', margin: '4px 0' }}>
+              <p style={{ color: 'var(--tinta-suave)', fontSize: 'var(--corpo-pequeno)', margin: '4px 0 var(--espaco-2)' }}>
+                Se não vier, tudo bem.
+              </p>
+              <div style={{ display: 'flex', gap: 'var(--espaco-1)' }}>
+                <input
+                  value={texto}
+                  onChange={(e) => setTexto(e.target.value)}
+                  onFocus={() => setFocado(true)}
+                  onBlur={() => setFocado(false)}
+                  onKeyDown={(e) => { if (e.key === 'Enter') guardar(); }}
+                  placeholder="uma coisa simples…"
+                  autoFocus
+                  style={{ flex: 1, minWidth: 0, border: '1px solid var(--linha)', borderRadius: 'var(--raio-sm)', padding: '10px var(--espaco-2)', background: 'var(--papel)' }}
+                />
+                <button className="botao" onClick={() => guardar()} disabled={!texto.trim()} aria-label="guardar" style={{ padding: '10px 18px' }}>→</button>
+              </div>
+              <button onClick={() => setSugestao(umaSugestao())} style={{ ...linkInline, marginTop: 'var(--espaco-2)' }}>
+                não acho um motivo
+              </button>
+            </>
+          ) : (
+            <>
+              <p style={{ color: 'var(--tinta-suave)', fontSize: 'var(--corpo-pequeno)', margin: '4px 1.2rem 4px 0' }}>
                 Então uma que a gente esquece:
               </p>
-              <button onClick={recolher} aria-label="recolher" style={{ marginLeft: 'auto', background: 'none', border: 'none', color: 'var(--tinta-suave)', cursor: 'pointer', fontSize: '1.25rem', lineHeight: 1 }}>×</button>
-            </div>
-            <p style={{ fontFamily: 'var(--fonte-titulo)', fontStyle: 'italic', fontSize: 'var(--titulo-sm)', color: 'var(--verde-petroleo)', margin: 0 }}>
-              {sugestao}
-            </p>
-            <div style={{ display: 'flex', gap: 'var(--espaco-1)', flexWrap: 'wrap', marginTop: 'var(--espaco-2)', alignItems: 'center' }}>
-              <button className="botao" onClick={() => guardar(sugestao)}>isso, guardar</button>
-              <button onClick={() => setSugestao(umaSugestao(sugestao))} style={linkInline}>outra</button>
-            </div>
-          </>
-        )}
-      </div>
+              <p style={{ fontFamily: 'var(--fonte-titulo)', fontStyle: 'italic', fontSize: 'var(--titulo-sm)', color: 'var(--verde-petroleo)', margin: 0 }}>
+                {sugestao}
+              </p>
+              <div style={{ display: 'flex', gap: 'var(--espaco-1)', flexWrap: 'wrap', marginTop: 'var(--espaco-2)', alignItems: 'center' }}>
+                <button className="botao" onClick={() => guardar(sugestao)}>isso, guardar</button>
+                <button onClick={() => setSugestao(umaSugestao(sugestao))} style={linkInline}>outra</button>
+              </div>
+            </>
+          )}
+        </div>
+      )}
     </div>
   );
 }

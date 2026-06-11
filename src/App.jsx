@@ -251,9 +251,19 @@ export default function App() {
 
   const secao = SECOES.find((s) => s.id === secaoId);
 
+  const irVideos = () => { setResposta(null); setSecaoId('videos'); };
+  const irPolitica = () => { setResposta(null); setSecaoId('politica'); };
+
   return (
-    <div style={{ minHeight: '100%', display: 'flex', flexDirection: 'column', paddingBottom: 56 }}>
-      <Nav atual={secaoId} onIr={(id) => { setResposta(null); if (id) setSecaoId(id); else { setEntrou(false); setVibe(null); } }} />
+    <div className="val-app" style={{ minHeight: '100%', display: 'flex', flexDirection: 'column' }}>
+      <Nav
+        atual={secaoId}
+        onIr={(id) => { setResposta(null); if (id) setSecaoId(id); else { setEntrou(false); setVibe(null); } }}
+        estado={vibe}
+        onVideos={irVideos}
+        onPolitica={irPolitica}
+        onEncerrar={() => setSaindo(true)}
+      />
 
       {pausa && <Pausa pergunta={pausaQ} onFechar={() => setPausa(false)} />}
 
@@ -280,11 +290,12 @@ export default function App() {
         ) : null}
       </main>
 
-      {/* Rodapé: vídeos e "encerrar visita" (seção 6). */}
-      <footer style={{ borderTop: '1px solid var(--linha)', padding: 'var(--espaco-3)', textAlign: 'center', display: 'flex', gap: 'var(--espaco-2)', justifyContent: 'center', flexWrap: 'wrap' }}>
-        <button className="botao-suave" onClick={() => { setResposta(null); setSecaoId('videos'); }}>Vídeos</button>
-        <button className="botao-suave" onClick={() => { setResposta(null); setSecaoId('politica'); }}>Privacidade</button>
-        <button className="botao-suave" onClick={() => setSaindo(true)}>Encerrar visita</button>
+      {/* Rodapé discreto (parte 5): menos peso que as ações principais.
+          No celular ele se esconde, e os mesmos itens vivem na folha "Mais". */}
+      <footer className="val-footer">
+        <button onClick={irVideos}>Vídeos</button>
+        <button onClick={irPolitica}>Privacidade</button>
+        <button onClick={() => setSaindo(true)}>Encerrar visita</button>
       </footer>
 
       <GratidaoWidget pedidoAbertura={aberturaGrat} />

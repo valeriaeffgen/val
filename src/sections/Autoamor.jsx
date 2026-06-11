@@ -2,6 +2,7 @@ import { useState } from 'react';
 import Secao from '../components/Secao';
 import { db } from '../lib/db';
 import { hoje } from '../lib/storage';
+import { formatarDia } from '../lib/datas';
 import { useColecao } from '../lib/useColecao';
 import { palavraDeHoje } from '../lib/val';
 import { hasSupabase } from '../lib/supabase';
@@ -51,37 +52,35 @@ function PalavraDeHoje() {
     setPlantada(true);
   }
 
-  const corBotao = { color: 'var(--sobre-escuro)', borderColor: 'rgba(239,231,214,0.4)' };
-
   return (
-    <div className="card-escuro" style={{ marginBottom: 'var(--espaco-3)' }}>
+    <div className="card" style={{ marginBottom: 'var(--espaco-3)' }}>
       <h3 style={{ fontStyle: 'italic', marginTop: 0, marginBottom: 4 }}>A palavra de hoje</h3>
-      <p style={{ color: 'var(--sobre-escuro-suave)', marginTop: 0, fontSize: 'var(--corpo-pequeno)' }}>
+      <p style={{ color: 'var(--tinta-suave)', marginTop: 0, fontSize: 'var(--corpo-pequeno)' }}>
         Uma conversa composta pra você, a partir do que você é, viveu e registrou. Nunca genérica.
       </p>
 
       {estado === 'inicio' && (
-        <button className="botao-suave" onClick={receber} style={corBotao}>Receber a palavra</button>
+        <button className="botao-suave" onClick={receber}>Receber a palavra</button>
       )}
       {estado === 'carregando' && (
-        <p style={{ color: 'var(--sobre-escuro-suave)', margin: 0 }}>A Val está achando a sua…</p>
+        <p style={{ color: 'var(--tinta-suave)', margin: 0 }}>A Val está achando a sua…</p>
       )}
       {estado === 'pronta' && (
         <>
-          <p style={{ fontFamily: 'var(--fonte-titulo)', fontStyle: 'italic', fontSize: 'var(--titulo-md)', margin: '0 0 var(--espaco-3)', lineHeight: 1.35 }}>
+          <p style={{ fontFamily: 'var(--fonte-titulo)', fontStyle: 'italic', fontSize: 'var(--titulo-md)', color: 'var(--verde-petroleo)', margin: '0 0 var(--espaco-3)', lineHeight: 1.35 }}>
             {palavra}
           </p>
-          <button className="botao-suave" onClick={plantar} disabled={plantada} style={corBotao}>
+          <button className="botao-suave" onClick={plantar} disabled={plantada}>
             {plantada ? 'plantada. agora é sua.' : 'Plantar no meu banco'}
           </button>
-          <VotoUtil id={palavraId} escuro />
+          <VotoUtil id={palavraId} />
         </>
       )}
       {estado === 'erro' && (
-        <p style={{ color: 'var(--sobre-escuro-suave)', margin: 0 }}>Hoje a palavra não veio. Respira, ela volta.</p>
+        <p style={{ color: 'var(--tinta-suave)', margin: 0 }}>Hoje a palavra não veio. Respira, ela volta.</p>
       )}
       {estado === 'sem-backend' && (
-        <p style={{ color: 'var(--sobre-escuro-suave)', margin: 0 }}>A palavra de hoje precisa do backend ligado para ser gerada.</p>
+        <p style={{ color: 'var(--tinta-suave)', margin: 0 }}>A palavra de hoje precisa do backend ligado para ser gerada.</p>
       )}
     </div>
   );
@@ -170,8 +169,9 @@ function BancoPessoal() {
           </p>
           <ul style={{ listStyle: 'none', padding: 0, display: 'grid', gap: 'var(--espaco-1)' }}>
             {palavras.map((p) => (
-              <li key={p.id} className="card" style={{ padding: 'var(--espaco-2)', fontFamily: 'var(--fonte-titulo)', fontStyle: 'italic' }}>
-                {p.text}
+              <li key={p.id} className="card" style={{ padding: 'var(--espaco-2)' }}>
+                <p style={{ margin: 0, fontFamily: 'var(--fonte-titulo)', fontStyle: 'italic' }}>{p.text}</p>
+                <p style={{ margin: '4px 0 0', color: 'var(--tinta-suave)', fontSize: 'var(--corpo-pequeno)', fontFamily: 'var(--fonte-corpo)', fontStyle: 'normal' }}>{formatarDia(p.day)}</p>
               </li>
             ))}
           </ul>

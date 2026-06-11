@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import Secao from '../components/Secao';
 import { db } from '../lib/db';
+import { formatarDia } from '../lib/datas';
 import { useColecao } from '../lib/useColecao';
 import { CONSCIENCIA_SEMENTES, MICRO_EXERCICIOS, TIPOS_PROSPERIDADE } from '../data/seed';
 import { perguntaProsperidade } from '../lib/val';
@@ -192,6 +193,7 @@ function Acervo() {
                 {e.pergunta && (
                   <p style={{ margin: '6px 0 0', color: 'var(--tinta-suave)', fontSize: 'var(--corpo-pequeno)', fontStyle: 'italic', fontFamily: 'var(--fonte-titulo)' }}>{e.pergunta}</p>
                 )}
+                <p style={{ margin: '6px 0 0', color: 'var(--tinta-suave)', fontSize: 'var(--corpo-pequeno)' }}>{formatarDia(e.day)}</p>
               </div>
             ))}
           </div>

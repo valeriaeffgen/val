@@ -1,5 +1,6 @@
 import Secao from '../components/Secao';
 import { useColecao } from '../lib/useColecao';
+import { formatarDia } from '../lib/datas';
 
 /*
  * O mural da gratidão (seção 6, comportamento transversal) — não é seção de
@@ -7,13 +8,6 @@ import { useColecao } from '../lib/useColecao';
  * cat 'gratidao'), do mais recente ao mais antigo, sob a RLS dela. A alma de
  * guardar para devolver com sentido: aqui ela relê a abundância acumulada.
  */
-function formatDia(day) {
-  if (!day) return '';
-  const hoje = new Date().toISOString().slice(0, 10);
-  if (day === hoje) return 'hoje';
-  const [y, m, d] = day.split('-').map(Number);
-  return new Date(y, m - 1, d).toLocaleDateString('pt-BR', { day: 'numeric', month: 'long' });
-}
 
 export default function Mural({ onNavegar }) {
   const diario = useColecao('diario');
@@ -35,7 +29,7 @@ export default function Mural({ onNavegar }) {
               <p style={{ margin: 0, fontFamily: 'var(--fonte-titulo)', fontStyle: 'italic', fontSize: 'var(--titulo-sm)', color: 'var(--verde-petroleo)', lineHeight: 1.4 }}>
                 {m.text}
               </p>
-              <p style={{ margin: '6px 0 0', color: 'var(--tinta-suave)', fontSize: 'var(--corpo-pequeno)' }}>{formatDia(m.day)}</p>
+              <p style={{ margin: '6px 0 0', color: 'var(--tinta-suave)', fontSize: 'var(--corpo-pequeno)' }}>{formatarDia(m.day)}</p>
             </div>
           ))}
         </div>
