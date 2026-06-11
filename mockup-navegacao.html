@@ -29,17 +29,22 @@
   .assin .p{color:var(--ambar)}
   .rotulo-secao{font-size:.78rem;letter-spacing:.14em;text-transform:uppercase;color:var(--tinta-suave);margin:40px 0 12px;font-weight:600}
 
-  /* ====================== DESKTOP NAV ====================== */
+  /* ====================== DESKTOP NAV (masthead editorial) ====================== */
   .frame{background:var(--papel-branco);border:1px solid var(--linha);border-radius:18px;
     box-shadow:0 1px 2px rgba(29,58,50,.04),0 10px 30px rgba(29,58,50,.07);overflow:hidden}
-  .dnav{display:flex;align-items:center;gap:28px;padding:14px 26px;
-    background:rgba(246,241,231,.82);backdrop-filter:blur(8px);border-bottom:1px solid var(--linha)}
-  .dnav .assin{font-size:1.7rem}
-  .grupos{display:flex;gap:26px;flex:1;flex-wrap:wrap}
-  .grupo{display:flex;flex-direction:column;gap:5px;padding-right:26px;border-right:1px solid var(--linha)}
-  .grupo:last-child{border-right:none;padding-right:0}
-  .grupo .glabel{font-size:.66rem;letter-spacing:.16em;text-transform:uppercase;color:var(--ambar);font-weight:600}
-  .grupo .gitems{display:flex;gap:16px;flex-wrap:wrap}
+  .dnav{padding:24px 28px 0;background:rgba(246,241,231,.82);backdrop-filter:blur(8px);border-bottom:1px solid var(--linha)}
+  /* assinatura soberana, centralizada, com o estado de chegada discreto ao lado */
+  .masthead{position:relative;text-align:center;padding-bottom:16px}
+  .masthead .assin{font-size:2.7rem;line-height:1}
+  .masthead .estado{position:absolute;right:2px;top:50%;transform:translateY(-50%);
+    color:var(--tinta-suave);font-size:.82rem;font-style:italic;font-family:var(--f-tit)}
+  /* menu como linha fina embaixo: quatro grupos equilibrados na largura */
+  .menu-linha{display:flex;align-items:flex-start;border-top:1px solid var(--linha)}
+  .grupo{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;
+    padding:12px 14px;border-right:1px solid var(--linha);text-align:center}
+  .grupo:last-child{border-right:none}
+  .grupo .glabel{font-size:.64rem;letter-spacing:.18em;text-transform:uppercase;color:var(--ambar);font-weight:600}
+  .grupo .gitems{display:flex;gap:14px;flex-wrap:wrap;justify-content:center}
   .link{font-size:1rem;color:var(--tinta-suave);text-decoration:none;padding:2px 0;white-space:nowrap;border-bottom:2px solid transparent}
   .link:hover{color:var(--verde-petroleo)}
   .link.ativo{color:var(--verde-petroleo);font-weight:600;border-bottom-color:var(--ambar)}
@@ -93,8 +98,11 @@
   <div class="rotulo-secao">Desktop · barra superior agrupada</div>
   <div class="frame">
     <nav class="dnav">
-      <span class="assin">Val<span class="p">.</span></span>
-      <div class="grupos">
+      <div class="masthead">
+        <span class="assin">Val<span class="p">.</span></span>
+        <span class="estado">neutra hoje</span>
+      </div>
+      <div class="menu-linha">
         <div class="grupo">
           <span class="glabel">Agora</span>
           <div class="gitems">
