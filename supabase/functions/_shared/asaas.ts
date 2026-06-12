@@ -18,8 +18,10 @@ export async function asaas(path: string, init: RequestInit = {}) {
       ...(init.headers ?? {}),
     },
   });
-  const corpo = await r.json().catch(() => ({}));
-  return { ok: r.ok, status: r.status, corpo };
+  const raw = await r.text();
+  let corpo: any = {};
+  try { corpo = raw ? JSON.parse(raw) : {}; } catch { /* resposta não-JSON (ex.: HTML de 404) */ }
+  return { ok: r.ok, status: r.status, corpo, raw, base: BASE, temChave: KEY.length > 0 };
 }
 
 // O valor e o pacote vêm da tabela `planos` no banco; aqui é só o preço em reais
