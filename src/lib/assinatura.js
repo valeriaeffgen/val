@@ -11,8 +11,16 @@ export async function iniciarAssinatura(metodo) {
   const { data, error } = await supabase.functions.invoke('assinar', {
     body: { metodo, retornoUrl: window.location.origin },
   });
-  if (error) throw error;
-  if (data?.erro) throw new Error(data.erro);
+  // Diagnóstico (sandbox): traz o detalhe do Asaas pra tela, em vez de esconder.
+  if (error) {
+    let msg = error.message || 'falha';
+    try {
+      const c = await error.context?.json?.();
+      if (c?.erro) msg = c.erro + (c.detalhe ? `: ${JSON.stringify(c.detalhe)}` : '');
+    } catch { /* sem corpo legível */ }
+    throw new Error(msg);
+  }
+  if (data?.erro) throw new Error(data.erro + (data.detalhe ? `: ${JSON.stringify(data.detalhe)}` : ''));
   return data?.url ?? null;
 }
 

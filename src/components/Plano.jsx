@@ -25,17 +25,17 @@ const TEXTOS = {
 export default function Plano({ motivo, onFechar }) {
   const t = TEXTOS[motivo] ?? TEXTOS.precisa_plano;
   const [indo, setIndo] = useState(false);
-  const [erro, setErro] = useState(false);
+  const [erro, setErro] = useState(null);
 
   async function assinar(metodo) {
-    setErro(false);
+    setErro(null);
     setIndo(true);
     try {
       const url = await iniciarAssinatura(metodo);
       if (url) window.location.href = url;
-      else { setErro(true); setIndo(false); }
-    } catch {
-      setErro(true);
+      else { setErro('sem url'); setIndo(false); }
+    } catch (e) {
+      setErro(e?.message || 'falha');
       setIndo(false);
     }
   }
@@ -75,9 +75,15 @@ export default function Plano({ motivo, onFechar }) {
               </button>
             </div>
             {erro && (
-              <p style={{ color: 'var(--tinta-suave)', fontSize: 'var(--corpo-pequeno)', marginBottom: 0 }}>
-                Não consegui abrir o pagamento agora. Tenta de novo daqui a pouco.
-              </p>
+              <>
+                <p style={{ color: 'var(--tinta-suave)', fontSize: 'var(--corpo-pequeno)', margin: 'var(--espaco-2) 0 4px' }}>
+                  Não consegui abrir o pagamento agora. Tenta de novo daqui a pouco.
+                </p>
+                {/* Diagnóstico de sandbox (remover antes do lançamento): */}
+                <p style={{ color: 'var(--tinta-suave)', fontSize: '12px', opacity: 0.7, margin: 0, wordBreak: 'break-word', fontFamily: 'monospace' }}>
+                  {String(erro)}
+                </p>
+              </>
             )}
           </>
         )}
