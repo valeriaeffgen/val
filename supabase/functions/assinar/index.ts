@@ -57,13 +57,13 @@ Deno.serve(async (req) => {
     };
     if (cartao) payload.subscription = { cycle: "MONTHLY" };
 
-    const { ok, status, corpo, raw, base, temChave } = await asaas("/checkouts", {
+    const { ok, status, corpo, raw, base: baseAsaas, temChave } = await asaas("/checkouts", {
       method: "POST",
       body: JSON.stringify(payload),
     });
     if (!ok) {
       console.error("Asaas checkout erro", status, raw);
-      return json({ erro: "asaas", detalhe: { status, base, temChave, corpo, raw: String(raw ?? "").slice(0, 400) } }, 502);
+      return json({ erro: "asaas", detalhe: { status, base: baseAsaas, temChave, corpo, raw: String(raw ?? "").slice(0, 400) } }, 502);
     }
 
     // O Asaas devolve o link da página de pagamento (campo varia por versão).
