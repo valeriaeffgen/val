@@ -34,3 +34,13 @@ cobrança, é memória, pra nada importante se perder entre uma rodada e outra.
 ## Admin
 - [ ] Transformar `/?caixa` numa tela de admin mais completa (gestão de curadoras,
   acervo oficial, pedidos de exclusão, panorama agregado e anônimo).
+
+## Asaas: virada sandbox → produção (FASE 3)
+- [ ] Remover o diagnóstico de sandbox: a linha técnica do erro do Asaas na tela
+  de plano (`src/components/Plano.jsx`) e o detalhe em `src/lib/assinatura.js`.
+- [ ] Trocar os segredos pra produção: `ASAAS_BASE_URL = https://api.asaas.com/v3`
+  e `ASAAS_API_KEY` = a chave de PRODUÇÃO do Asaas.
+- [ ] Recriar o webhook no painel de PRODUÇÃO do Asaas (mesma URL da função),
+  com um novo `ASAAS_WEBHOOK_TOKEN` de produção (e atualizar o segredo).
+- [ ] Fazer um pagamento real de R$48 de ponta a ponta antes de abrir ao público,
+  e cancelar pra conferir o reembolso/encerramento.
