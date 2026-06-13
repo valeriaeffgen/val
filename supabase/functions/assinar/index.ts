@@ -86,6 +86,7 @@ Deno.serve(async (req) => {
           cycle: "MONTHLY",
           description: "Assinatura mensal da Val, 300 créditos por mês",
           externalReference: user.id,
+          callback,
         }),
       });
       if (!sub.ok || !sub.corpo?.id) return falha("assinatura", sub);
