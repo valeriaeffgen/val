@@ -74,20 +74,27 @@ Deno.serve(async (req) => {
     let invoiceUrl: string | null = null;
     let assinaturaId: string | null = null;
 
+    // O `callback` (retorno automático) exige domínio cadastrado na conta Asaas.
+    // Se não houver, o Asaas recusa: tentamos COM callback e, na recusa, SEM ele.
+    // Assim funciona de qualquer jeito, e o retorno liga sozinho ao cadastrar o site.
+    async function criar(path: string, corpoBase: Record<string, unknown>) {
+      let r = await asaas(path, { method: "POST", body: JSON.stringify({ ...corpoBase, callback }) });
+      if (!r.ok && callback) {
+        r = await asaas(path, { method: "POST", body: JSON.stringify(corpoBase) });
+      }
+      return r;
+    }
+
     if (cartao) {
       // 2a) Assinatura recorrente mensal no cartão.
-      const sub = await asaas("/subscriptions", {
-        method: "POST",
-        body: JSON.stringify({
-          customer: clienteId,
-          billingType: "CREDIT_CARD",
-          value: VALOR_REAIS,
-          nextDueDate: hoje(),
-          cycle: "MONTHLY",
-          description: "Assinatura mensal da Val, 300 créditos por mês",
-          externalReference: user.id,
-          callback,
-        }),
+      const sub = await criar("/subscriptions", {
+        customer: clienteId,
+        billingType: "CREDIT_CARD",
+        value: VALOR_REAIS,
+        nextDueDate: hoje(),
+        cycle: "MONTHLY",
+        description: "Assinatura mensal da Val, 300 créditos por mês",
+        externalReference: user.id,
       });
       if (!sub.ok || !sub.corpo?.id) return falha("assinatura", sub);
       assinaturaId = sub.corpo.id;
@@ -97,23 +104,15 @@ Deno.serve(async (req) => {
       const primeira = Array.isArray(cobr.corpo?.data) ? cobr.corpo.data[0] : null;
       invoiceUrl = primeira?.invoiceUrl ?? null;
       if (!invoiceUrl) return falha("cobranca-assinatura", cobr);
-      // Liga o retorno automático na cobrança que ela vai pagar (best-effort).
-      if (callback && primeira?.id) {
-        await asaas(`/payments/${primeira.id}`, { method: "POST", body: JSON.stringify({ callback }) }).catch(() => {});
-      }
     } else {
-      // 2b) Cobrança Pix avulsa, com retorno automático pra Val.
-      const pag = await asaas("/payments", {
-        method: "POST",
-        body: JSON.stringify({
-          customer: clienteId,
-          billingType: "PIX",
-          value: VALOR_REAIS,
-          dueDate: hoje(),
-          description: "Val, 300 créditos (avulso)",
-          externalReference: user.id,
-          callback,
-        }),
+      // 2b) Cobrança Pix avulsa.
+      const pag = await criar("/payments", {
+        customer: clienteId,
+        billingType: "PIX",
+        value: VALOR_REAIS,
+        dueDate: hoje(),
+        description: "Val, 300 créditos (avulso)",
+        externalReference: user.id,
       });
       if (!pag.ok || !pag.corpo?.invoiceUrl) return falha("cobranca-pix", pag);
       invoiceUrl = pag.corpo.invoiceUrl;
