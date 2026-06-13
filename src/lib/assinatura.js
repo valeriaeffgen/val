@@ -5,11 +5,12 @@
  */
 import { supabase, hasSupabase } from './supabase';
 
-// metodo: 'cartao' (recorrente) | 'pix' (avulso). Devolve a URL do checkout.
-export async function iniciarAssinatura(metodo) {
+// metodo: 'cartao' (recorrente) | 'pix' (avulso). dados: { nome, cpf, telefone }.
+// O Asaas exige CPF pra criar o cliente; coletamos antes de mandar pra lá.
+export async function iniciarAssinatura(metodo, dados = {}) {
   if (!hasSupabase) throw new Error('sem-backend');
   const { data, error } = await supabase.functions.invoke('assinar', {
-    body: { metodo, retornoUrl: window.location.origin },
+    body: { metodo, ...dados, retornoUrl: window.location.origin },
   });
   // Diagnóstico (sandbox): traz o detalhe do Asaas pra tela, em vez de esconder.
   if (error) {
