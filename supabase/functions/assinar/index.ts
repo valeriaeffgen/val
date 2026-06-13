@@ -47,6 +47,9 @@ Deno.serve(async (req) => {
     if (!user) return json({ erro: "sem-sessao" }, 401);
 
     const cartao = metodo !== "pix";
+    // Retorno automático pra Val após o pagamento (página do Asaas → de volta).
+    const base = String(retornoUrl || "").replace(/\/$/, "");
+    const callback = base ? { successUrl: `${base}/?pago=1`, autoRedirect: true } : undefined;
 
     // 1) Cliente: reaproveita se já existe (mesmo CPF), senão cria.
     let clienteId: string | null = null;
@@ -93,8 +96,12 @@ Deno.serve(async (req) => {
       const primeira = Array.isArray(cobr.corpo?.data) ? cobr.corpo.data[0] : null;
       invoiceUrl = primeira?.invoiceUrl ?? null;
       if (!invoiceUrl) return falha("cobranca-assinatura", cobr);
+      // Liga o retorno automático na cobrança que ela vai pagar (best-effort).
+      if (callback && primeira?.id) {
+        await asaas(`/payments/${primeira.id}`, { method: "POST", body: JSON.stringify({ callback }) }).catch(() => {});
+      }
     } else {
-      // 2b) Cobrança Pix avulsa.
+      // 2b) Cobrança Pix avulsa, com retorno automático pra Val.
       const pag = await asaas("/payments", {
         method: "POST",
         body: JSON.stringify({
@@ -104,6 +111,7 @@ Deno.serve(async (req) => {
           dueDate: hoje(),
           description: "Val, 300 créditos (avulso)",
           externalReference: user.id,
+          callback,
         }),
       });
       if (!pag.ok || !pag.corpo?.invoiceUrl) return falha("cobranca-pix", pag);
