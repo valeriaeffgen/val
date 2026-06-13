@@ -33,7 +33,7 @@ set search_path = public
 as $$
 declare
   total integer;
-  limiar constant integer := 1; -- TEMPORÁRIO para testes (produção: 3) votos para subir à fila
+  limiar constant integer := 3; -- votos para subir à fila de curadoria
 begin
   insert into conteudo_util (conteudo_id, user_id)
   values (conteudo, auth.uid())

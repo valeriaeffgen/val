@@ -20,8 +20,8 @@ cobrança, é memória, pra nada importante se perder entre uma rodada e outra.
   gerações por mulher): 3 dias convertem ou cortam cedo demais?
 
 ## Curadoria e conteúdo
-- [ ] Subir o limiar de curadoria de **1 voto → 3** (`marcar_util`, migration 0003)
-  quando terminar a fase de teste. Hoje 1 voto já promove à fila.
+- [x] Subir o limiar de curadoria de **1 voto → 3** (feito no código; rodar o SQL
+  do `marcar_util` no painel pra valer no banco).
 - [ ] Vídeos: hoje são placeholders (`VIDEOS_DEMO`), aguardam as gravações da Valéria.
 - [ ] "Ciclo da Colheita" da Prosperidade está construído porém **dormente**
   (`CICLO_DA_COLHEITA_ATIVO = false`); ligar quando fizer sentido.
