@@ -23,8 +23,8 @@ cobrança, é memória, pra nada importante se perder entre uma rodada e outra.
 - [x] Subir o limiar de curadoria de **1 voto → 3** (feito no código; rodar o SQL
   do `marcar_util` no painel pra valer no banco).
 - [ ] Vídeos: hoje são placeholders (`VIDEOS_DEMO`), aguardam as gravações da Valéria.
-- [ ] "Ciclo da Colheita" da Prosperidade está construído porém **dormente**
-  (`CICLO_DA_COLHEITA_ATIVO = false`); ligar quando fizer sentido.
+- [ ] "Ciclo da Colheita" foi removido na reestruturação da Prosperidade; o
+  percurso será reescrito como uma das novas Jornadas (próximo passo).
 
 ## Privacidade / jurídico
 - [ ] Revisão jurídica da Política de Privacidade antes do lançamento público
