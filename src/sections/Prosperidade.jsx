@@ -361,6 +361,42 @@ function Percurso({ percursoId, onVoltar, onRepetir, onNavegar }) {
     }
   }
 
+  // Recuperação: um dia que não chegou a gravar (a Val regera o que faltou).
+  async function reabrir() {
+    setGerando(true);
+    setAviso(null);
+    try {
+      await gerarProximoDiaJornada(percursoId);
+      await carregar();
+    } catch (e) {
+      const m = e?.message;
+      if (m === 'sem_creditos' || m === 'precisa_plano') { /* tela de plano global */ }
+      else setAviso('erro');
+    } finally {
+      setGerando(false);
+    }
+  }
+
+  // O dia atual não foi gravado (tropeço ao abrir): oferecer reabrir, sem perder nada.
+  if (!diaAtual) {
+    return (
+      <div style={{ marginBottom: 'var(--espaco-5)' }}>
+        <button onClick={onVoltar} style={{ background: 'none', border: 'none', color: 'var(--tinta-suave)', cursor: 'pointer', fontStyle: 'italic', fontFamily: 'var(--fonte-titulo)', padding: 0, marginBottom: 'var(--espaco-2)' }}>← jornadas</button>
+        <div className="card-escuro">
+          <p style={{ color: 'var(--ambar)', fontSize: 'var(--corpo-pequeno)', fontFamily: 'var(--fonte-titulo)', fontStyle: 'italic', margin: 0 }}>{percurso.jornada_titulo}, dia {percurso.dia_atual} de {total}</p>
+          <p style={{ color: 'var(--sobre-escuro)', margin: 'var(--espaco-2) 0 0', lineHeight: 1.6 }}>Esse dia não chegou a abrir direito. Pode reabrir, sem perder nada do que você já viveu.</p>
+          {gerando ? (
+            <p style={{ color: 'var(--sobre-escuro-suave)', fontStyle: 'italic', fontFamily: 'var(--fonte-titulo)', margin: 'var(--espaco-2) 0 0' }}>Abrindo o seu dia…</p>
+          ) : (
+            <button className="botao-suave" style={{ ...corBotaoEscuro, marginTop: 'var(--espaco-2)' }} onClick={reabrir}>reabrir o dia</button>
+          )}
+          {aviso === 'erro' && <p style={{ color: 'var(--sobre-escuro-suave)', fontSize: 'var(--corpo-pequeno)', margin: 'var(--espaco-1) 0 0' }}>Não veio agora. Tenta de novo daqui a pouco.</p>}
+        </div>
+        <Caminho dias={anteriores} />
+      </div>
+    );
+  }
+
   return (
     <div style={{ marginBottom: 'var(--espaco-5)' }}>
       <button onClick={onVoltar} style={{ background: 'none', border: 'none', color: 'var(--tinta-suave)', cursor: 'pointer', fontStyle: 'italic', fontFamily: 'var(--fonte-titulo)', padding: 0, marginBottom: 'var(--espaco-2)' }}>← jornadas</button>

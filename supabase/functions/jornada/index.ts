@@ -130,21 +130,26 @@ Deno.serve(async (req) => {
     if (!percurso) return json({ erro: "sem_percurso" }, 404);
     if (percurso.concluido_em) return json({ erro: "concluido" }, 409);
 
-    const proxDia = (percurso.dia_atual ?? 0) + 1;
     const totalDias = percurso.jornada_dias;
-    if (proxDia > totalDias) return json({ erro: "concluido" }, 409);
 
-    const { data: dias } = await supabase
+    const { data: diasData } = await supabase
       .from("prosperidade_percurso_dias").select("*").eq("percurso_id", percursoId).order("dia");
+    const dias = diasData ?? [];
+    const ultimo = dias.length ? dias[dias.length - 1] : null;
+
+    // O próximo dia se baseia nos registros REAIS, não num contador. Assim, se
+    // um percurso ficou com o contador à frente do que foi gravado, ele se cura
+    // (regera o dia que faltou) em vez de travar numa tela vazia.
+    const proxDia = (ultimo?.dia ?? 0) + 1;
+    if (proxDia > totalDias) return json({ erro: "concluido" }, 409);
 
     // Ritmo, sem cobrança: precisa ter respondido o dia anterior, e esperado o
     // intervalo. Só a partir do 2º dia (o 1º libera na hora).
-    if ((percurso.dia_atual ?? 0) >= 1) {
-      const anterior = (dias ?? []).find((d) => d.dia === percurso.dia_atual);
-      if (!anterior?.respondido_em) return json({ erro: "responda_antes" }, 409);
+    if (ultimo) {
+      if (!ultimo.respondido_em) return json({ erro: "responda_antes" }, 409);
       const intervalo = percurso.intervalo_horas ?? 24;
-      if (intervalo > 0 && percurso.ultimo_dia_em) {
-        const libera = new Date(percurso.ultimo_dia_em).getTime() + intervalo * 3600_000;
+      if (intervalo > 0 && ultimo.gerado_em) {
+        const libera = new Date(ultimo.gerado_em).getTime() + intervalo * 3600_000;
         if (Date.now() < libera) return json({ erro: "aguarde", liberaEm: new Date(libera).toISOString() }, 409);
       }
     }
@@ -217,9 +222,16 @@ Deno.serve(async (req) => {
     }
 
     const { reflexao, tarefa } = parseDia(texto, tarefaArco);
-    const { data: inserido } = await supabase.from("prosperidade_percurso_dias")
+    const { data: inserido, error: insErro } = await supabase.from("prosperidade_percurso_dias")
       .insert({ percurso_id: percursoId, dia: proxDia, prompt, abertura: reflexao, tarefa })
       .select("id").single();
+    // Nunca "fingir sucesso": se não gravou, estorna o crédito e avisa, e o
+    // contador NÃO avança (sem dia fantasma).
+    if (insErro) {
+      console.error("jornada: falha ao gravar o dia", insErro);
+      await estornarGeracao(authHeader, 1, credito.saldo);
+      return json({ erro: "salvar" }, 500);
+    }
     await supabase.from("prosperidade_percursos")
       .update({ dia_atual: proxDia, ultimo_dia_em: agora }).eq("id", percursoId);
 
