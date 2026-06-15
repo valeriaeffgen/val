@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Secao from '../components/Secao';
 import { db } from '../lib/db';
 import { hoje } from '../lib/storage';
 import { useColecao } from '../lib/useColecao';
+import { lerPercursos } from '../lib/jornadas';
 import { resumoDaHistoria } from '../lib/val';
 import { hasSupabase } from '../lib/supabase';
 import { ESTADOS_CHEGADA, TIPOS_PROSPERIDADE } from '../data/seed';
@@ -95,11 +96,29 @@ function ResumoDaVal() {
   );
 }
 
+// As jornadas concluídas vivem em `prosperidade_percursos` (ordenada por
+// iniciado_em, não created_at), então leem por fora do useColecao genérico.
+// Recarrega ao ouvir 'val:data', igual aos demais hooks.
+function usePercursosConcluidos() {
+  const [itens, setItens] = useState([]);
+  useEffect(() => {
+    let vivo = true;
+    const carregar = () => lerPercursos()
+      .then((ps) => { if (vivo) setItens(ps.filter((p) => p.concluido_em && p.fechamento)); })
+      .catch(() => {});
+    carregar();
+    window.addEventListener('val:data', carregar);
+    return () => { vivo = false; window.removeEventListener('val:data', carregar); };
+  }, []);
+  return itens;
+}
+
 // --- (1) O acervo completo, por tipo, pra reler -------------------------------
 function AcervoCompleto() {
   const diario = useColecao('diario');
   const prosperidade = useColecao('prosperidade');
   const jornadas = useColecao('jornadas');
+  const percursos = usePercursosConcluidos();
 
   const grupos = [
     { titulo: 'Gratidões', itens: diario.filter((d) => d.cat === 'gratidao').map((d) => ({ id: d.id, texto: d.text, sub: formatDia(d.day) })) },
@@ -108,6 +127,14 @@ function AcervoCompleto() {
       itens: prosperidade.filter((p) => p.tipo === t).map((p) => ({ id: p.id, texto: p.texto, sub: p.pergunta })),
     })),
     { titulo: 'Gestos de autoamor', itens: diario.filter((d) => d.cat === 'autoamor').map((d) => ({ id: d.id, texto: d.text, sub: formatDia(d.day) })) },
+    {
+      titulo: 'Jornadas da Prosperidade',
+      itens: percursos.map((p) => ({
+        id: p.id,
+        texto: p.fechamento,
+        sub: `${p.jornada_titulo}, concluída em ${formatDia(new Date(p.concluido_em).toISOString().slice(0, 10))}`,
+      })),
+    },
     { titulo: 'Jornadas percorridas', itens: jornadas.filter((j) => j.devolutiva).map((j) => ({ id: j.id, texto: j.devolutiva, sub: j.titulo })) },
   ].filter((g) => g.itens.length);
 
