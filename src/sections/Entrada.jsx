@@ -30,8 +30,17 @@ export default function Entrada() {
     marcarConsentimento(); // o "sim" deste aparelho; a prova no banco é gravada após o login
     const { error } = await entrarComEmail(v);
     setEnviando(false);
-    if (error) setErro('Não consegui enviar agora. Confere o e-mail e tenta de novo.');
-    else setEnviado(true);
+    if (error) {
+      // Logamos a causa real (config do Supabase: limite de envio, SMTP, URL de
+      // redirect) pra diagnóstico, sem expor jargão pra mulher.
+      console.warn('Val: falha ao enviar o link —', error?.status, error?.message);
+      const limite = /rate|seconds|too many|limit/i.test(error?.message ?? '');
+      setErro(limite
+        ? 'Você pediu o link faz pouco tempo. Espera um minutinho e tenta de novo.'
+        : 'Não consegui enviar agora. Confere o e-mail e tenta de novo.');
+    } else {
+      setEnviado(true);
+    }
   }
 
   if (verPolitica) {
