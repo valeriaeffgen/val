@@ -44,15 +44,16 @@ export default function Entrada() {
 
   return (
     <section style={{ minHeight: '100%', display: 'grid', placeItems: 'center', padding: 'var(--espaco-4) var(--espaco-3)' }}>
-      <div style={{ maxWidth: '46ch', width: '100%', textAlign: 'center' }}>
-        <p className="assinatura" style={{ fontSize: '3.4rem', margin: 0 }}>
+      <div style={{ maxWidth: '54ch', width: '100%', textAlign: 'left' }}>
+        {/* Masthead: a assinatura centralizada no topo. */}
+        <p className="assinatura" style={{ fontSize: '3.4rem', margin: 0, textAlign: 'center' }}>
           Val<span className="ponto">.</span>
         </p>
 
         {enviado ? (
-          <div style={{ marginTop: 'var(--espaco-3)' }}>
-            <h1 style={{ fontStyle: 'italic' }}>Te enviei um link.</h1>
-            <p style={{ color: 'var(--tinta-suave)' }}>
+          <div style={{ marginTop: 'var(--espaco-4)' }}>
+            <h1 style={{ fontStyle: 'italic', marginTop: 0 }}>Te enviei um link.</h1>
+            <p style={{ color: 'var(--tinta-suave)', lineHeight: 1.7 }}>
               Abra o seu e-mail e toque no link para entrar. Pode fechar esta aba.
             </p>
             <button className="botao-suave" onClick={() => setEnviado(false)} style={{ marginTop: 'var(--espaco-2)' }}>
@@ -61,37 +62,38 @@ export default function Entrada() {
           </div>
         ) : (
           <>
-            <h1 style={{ fontStyle: 'italic', marginTop: 'var(--espaco-3)' }}>Que bom que você veio.</h1>
-            <div style={{ textAlign: 'left', maxWidth: '42ch', margin: '0 auto var(--espaco-4)', color: 'var(--tinta)' }}>
-              <p style={{ margin: '0 0 var(--espaco-3)', lineHeight: 1.75 }}>
-                Mesmo quando tudo parece funcionar, por dentro pode existir uma inquietação, com aquela sensação de que você quer mais da vida. Esse é o seu chamado.
-              </p>
-              <p style={{ margin: '0 0 var(--espaco-3)', lineHeight: 1.75 }}>
-                A Val é um espaço que te ajuda a voltar ao seu centro: organizar o que sente, reconhecer o que já tem de valioso e enxergar com clareza os próximos passos. Você não precisa abrir mão do que já fez até aqui para recomeçar. Às vezes só precisa se escutar com mais presença e receber o direcionamento certo.
-              </p>
-              <p style={{ margin: 0, lineHeight: 1.75, fontFamily: 'var(--fonte-titulo)', fontStyle: 'italic', color: 'var(--verde-petroleo)' }}>
-                Vá ao encontro de si mesma. O futuro começa aí.
-              </p>
-            </div>
-            <form onSubmit={entrar} style={{ display: 'grid', gap: 'var(--espaco-2)', justifyItems: 'center' }}>
+            {/* Daqui pra baixo, tudo numa coluna única alinhada à esquerda. */}
+            <h1 style={{ fontStyle: 'italic', margin: 'var(--espaco-4) 0 var(--espaco-3)' }}>Que bom que você veio.</h1>
+
+            <p style={{ margin: '0 0 var(--espaco-3)', lineHeight: 1.75, color: 'var(--tinta)' }}>
+              Mesmo quando tudo parece funcionar, por dentro pode existir uma inquietação, com aquela sensação de que você quer mais da vida. Esse é o seu chamado.
+            </p>
+            <p style={{ margin: '0 0 var(--espaco-3)', lineHeight: 1.75, color: 'var(--tinta)' }}>
+              A Val é um espaço que te ajuda a voltar ao seu centro: organizar o que sente, reconhecer o que já tem de valioso e enxergar com clareza os próximos passos. Você não precisa abrir mão do que já fez até aqui para recomeçar. Às vezes só precisa se escutar com mais presença e receber o direcionamento certo.
+            </p>
+            <p style={{ margin: '0 0 var(--espaco-4)', lineHeight: 1.75, fontFamily: 'var(--fonte-titulo)', fontStyle: 'italic', color: 'var(--verde-petroleo)' }}>
+              Vá ao encontro de si mesma. O futuro começa aí.
+            </p>
+
+            <form onSubmit={entrar} style={{ display: 'grid', gap: 'var(--espaco-2)', justifyItems: 'stretch' }}>
               <p style={{ color: 'var(--tinta-suave)', fontSize: 'var(--corpo-pequeno)', margin: 0 }}>
                 Sem senha, a Val te manda um link.
               </p>
-              <div style={{ display: 'flex', gap: 'var(--espaco-1)', justifyContent: 'center', flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', gap: 'var(--espaco-1)', flexWrap: 'wrap' }}>
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="seu e-mail"
                   autoFocus
-                  style={{ border: '1px solid var(--linha)', borderRadius: 'var(--raio-sm)', padding: '12px var(--espaco-2)', background: 'var(--papel-branco)', minWidth: 240 }}
+                  style={{ flex: 1, minWidth: 200, border: '1px solid var(--linha)', borderRadius: 'var(--raio-sm)', padding: '12px var(--espaco-2)', background: 'var(--papel-branco)' }}
                 />
                 <button type="submit" className="botao" disabled={enviando || !email.trim() || !aceito}>
                   {enviando ? 'enviando…' : 'entrar'}
                 </button>
               </div>
 
-              <label style={{ display: 'flex', gap: 'var(--espaco-1)', alignItems: 'flex-start', textAlign: 'left', color: 'var(--tinta-suave)', fontSize: 'var(--corpo-pequeno)', maxWidth: '40ch', cursor: 'pointer' }}>
+              <label style={{ display: 'flex', gap: 'var(--espaco-1)', alignItems: 'flex-start', color: 'var(--tinta-suave)', fontSize: 'var(--corpo-pequeno)', cursor: 'pointer' }}>
                 <input
                   type="checkbox"
                   checked={aceito}
