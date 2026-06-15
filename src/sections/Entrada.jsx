@@ -62,10 +62,21 @@ export default function Entrada() {
         ) : (
           <>
             <h1 style={{ fontStyle: 'italic', marginTop: 'var(--espaco-3)' }}>Que bom que você veio.</h1>
-            <p style={{ color: 'var(--tinta-suave)', marginBottom: 'var(--espaco-3)' }}>
-              Deixe seu e-mail para a Val guardar a sua história e te encontrar em qualquer dia, em qualquer aparelho. Sem senha, ela te manda um link.
-            </p>
+            <div style={{ textAlign: 'left', maxWidth: '42ch', margin: '0 auto var(--espaco-4)', color: 'var(--tinta)' }}>
+              <p style={{ margin: '0 0 var(--espaco-3)', lineHeight: 1.75 }}>
+                Mesmo quando tudo parece funcionar, por dentro pode existir uma inquietação, com aquela sensação de que você quer mais da vida. Esse é o seu chamado.
+              </p>
+              <p style={{ margin: '0 0 var(--espaco-3)', lineHeight: 1.75 }}>
+                A Val é um espaço que te ajuda a voltar ao seu centro: organizar o que sente, reconhecer o que já tem de valioso e enxergar com clareza os próximos passos. Você não precisa abrir mão do que já fez até aqui para recomeçar. Às vezes só precisa se escutar com mais presença e receber o direcionamento certo.
+              </p>
+              <p style={{ margin: 0, lineHeight: 1.75, fontFamily: 'var(--fonte-titulo)', fontStyle: 'italic', color: 'var(--verde-petroleo)' }}>
+                Vá ao encontro de si mesma. O futuro começa aí.
+              </p>
+            </div>
             <form onSubmit={entrar} style={{ display: 'grid', gap: 'var(--espaco-2)', justifyItems: 'center' }}>
+              <p style={{ color: 'var(--tinta-suave)', fontSize: 'var(--corpo-pequeno)', margin: 0 }}>
+                Sem senha, a Val te manda um link.
+              </p>
               <div style={{ display: 'flex', gap: 'var(--espaco-1)', justifyContent: 'center', flexWrap: 'wrap' }}>
                 <input
                   type="email"
