@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase, hasSupabase } from '../lib/supabase';
+import AdminJornadas from '../components/AdminJornadas';
 
 /*
  * Caixa de entrada da Valéria (seção 8) — o lado humano, só dela.
@@ -147,6 +148,7 @@ export default function Caixa() {
         <div style={{ display: 'flex', gap: 'var(--espaco-1)' }}>
           {tab('cartas', 'Cartas', aguardando.length)}
           {tab('curadoria', 'Curadoria', curadoria.length)}
+          {tab('jornadas', 'Jornadas', 0)}
         </div>
         <button className="botao-suave" onClick={() => supabase.auth.signOut()}>sair</button>
       </div>
@@ -177,6 +179,8 @@ export default function Caixa() {
             </div>
           )}
         </div>
+      ) : aba === 'jornadas' ? (
+        <AdminJornadas />
       ) : (
         <div style={{ marginTop: 'var(--espaco-3)' }}>
           <p style={{ color: 'var(--tinta-suave)', fontFamily: 'var(--fonte-titulo)', fontStyle: 'italic' }}>

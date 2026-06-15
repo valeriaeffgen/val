@@ -101,6 +101,20 @@ export async function fechoProsperidade() {
 }
 
 /*
+ * Jornadas da Prosperidade: gera o PRÓXIMO dia de um percurso (1 crédito). O
+ * coração (memória entre dias) e o ritmo vivem na função Edge `jornada`. Devolve
+ * { tipo:'dia', ... } ou { tipo:'fechamento', ... }, ou os códigos de ritmo
+ * (aguarde / responda_antes / concluido) pra UI tratar com leveza.
+ */
+export async function gerarProximoDiaJornada(percursoId) {
+  if (!hasSupabase) throw new Error('sem-backend');
+  const { data, error } = await supabase.functions.invoke('jornada', { body: { percursoId } });
+  if (error) throw await sinalizarHttp(error);
+  if (data?.erro) throw sinalizarErro(data.erro);
+  return data;
+}
+
+/*
  * "O espelho" do Olhar pra dentro — devolutiva gerada das respostas dela à
  * jornada, com cache (regra 2). Ver supabase/functions/espelho.
  */

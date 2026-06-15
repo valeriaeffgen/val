@@ -1,11 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Secao from '../components/Secao';
 import { db } from '../lib/db';
 import { formatarDia } from '../lib/datas';
 import { useColecao } from '../lib/useColecao';
 import { TIPOS_PROSPERIDADE } from '../data/seed';
 import { lerAngulosHoje, lerFechoACada, anguloDoDia } from '../lib/prosperidade';
-import { fechoProsperidade } from '../lib/val';
+import { lerJornadas, lerPercursos, lerDias, iniciarPercurso, responderDia, liberacao } from '../lib/jornadas';
+import { fechoProsperidade, gerarProximoDiaJornada } from '../lib/val';
 
 /*
  * Prosperidade (seções 6 e 7). Reconhecer a abundância REAL que já é da mulher,
@@ -22,7 +23,7 @@ export default function Prosperidade({ onNavegar, onGratidao }) {
   return (
     <Secao titulo="Prosperidade" abertura="reconhecer o que já é seu, e agir com clareza">
       <Hoje onNavegar={onNavegar} onGratidao={onGratidao} />
-      <Jornadas />
+      <Jornadas onNavegar={onNavegar} />
       <Acervo />
     </Secao>
   );
@@ -148,14 +149,268 @@ function Hoje({ onNavegar, onGratidao }) {
   );
 }
 
-// --- Jornadas (esqueleto; conteúdo no próximo passo) --------------------------
-function Jornadas() {
+// --- Jornadas: percursos de vários dias, com memória entre os dias ------------
+// Lista → contrato → percurso (retomada, um dia por vez) → fechamento. Cada
+// rodada é um registro separado (repetir não sobrescreve). 1 crédito por dia.
+function Jornadas({ onNavegar }) {
+  const [jornadas, setJornadas] = useState([]);
+  const [percursos, setPercursos] = useState([]);
+  const [carregando, setCarregando] = useState(true);
+  const [vista, setVista] = useState({ tela: 'lista' });
+
+  const recarregar = useCallback(async () => {
+    const [j, p] = await Promise.all([lerJornadas(), lerPercursos()]);
+    setJornadas(j);
+    setPercursos(p);
+    setCarregando(false);
+  }, []);
+  useEffect(() => { recarregar(); }, [recarregar]);
+
+  const voltarLista = () => { setVista({ tela: 'lista' }); recarregar(); };
+
+  if (vista.tela === 'contrato') {
+    return <Contrato jornada={vista.jornada} onVoltar={voltarLista} onComecou={(id) => setVista({ tela: 'percurso', percursoId: id })} />;
+  }
+  if (vista.tela === 'percurso') {
+    return <Percurso percursoId={vista.percursoId} onVoltar={voltarLista} onNavegar={onNavegar}
+      onRepetir={(jid) => { const j = jornadas.find((x) => x.id === jid); j ? setVista({ tela: 'contrato', jornada: j }) : voltarLista(); }} />;
+  }
+
+  // --- Lista ---
+  const emAndamento = percursos.filter((p) => !p.concluido_em);
+  const concluidos = percursos.filter((p) => p.concluido_em);
+
   return (
     <div style={{ marginBottom: 'var(--espaco-5)' }}>
       <h3 style={{ fontStyle: 'italic' }}>Jornadas</h3>
       <p style={{ color: 'var(--tinta-suave)', marginTop: 0, fontSize: 'var(--corpo-pequeno)' }}>
-        Percursos pra reconhecer e ampliar o que já é seu. Em breve.
+        Percursos de vários dias, um por vez, no seu ritmo. A Val lembra de tudo que você foi dizendo, e no fim te devolve o caminho.
       </p>
+
+      {carregando ? (
+        <p style={{ color: 'var(--tinta-suave)', fontStyle: 'italic', fontFamily: 'var(--fonte-titulo)' }}>um instante…</p>
+      ) : (
+        <>
+          {emAndamento.length > 0 && (
+            <div style={{ marginBottom: 'var(--espaco-3)' }}>
+              <p style={{ color: 'var(--ambar)', fontSize: 'var(--corpo-pequeno)', fontFamily: 'var(--fonte-titulo)', fontStyle: 'italic', margin: '0 0 var(--espaco-1)' }}>Continue de onde parou</p>
+              <div style={{ display: 'grid', gap: 'var(--espaco-1)' }}>
+                {emAndamento.map((p) => (
+                  <button key={p.id} className="card" onClick={() => setVista({ tela: 'percurso', percursoId: p.id })}
+                    style={{ textAlign: 'left', cursor: 'pointer', border: '1px solid var(--linha)', borderLeft: '3px solid var(--ambar)' }}>
+                    <p style={{ margin: 0, fontFamily: 'var(--fonte-titulo)', fontStyle: 'italic' }}>{p.jornada_titulo}</p>
+                    <p style={{ margin: '4px 0 0', color: 'var(--tinta-suave)', fontSize: 'var(--corpo-pequeno)' }}>
+                      você está no dia {p.dia_atual} de {p.jornada_dias}
+                    </p>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div style={{ display: 'grid', gap: 'var(--espaco-1)' }}>
+            {jornadas.map((j) => (
+              <button key={j.id} className="card" onClick={() => setVista({ tela: 'contrato', jornada: j })}
+                style={{ textAlign: 'left', cursor: 'pointer' }}>
+                <p style={{ margin: 0, fontFamily: 'var(--fonte-titulo)', fontStyle: 'italic', fontSize: 'var(--titulo-sm)' }}>{j.titulo}</p>
+                {j.subtitulo && <p style={{ margin: '4px 0 0', color: 'var(--tinta-suave)', fontSize: 'var(--corpo-pequeno)' }}>{j.subtitulo}</p>}
+              </button>
+            ))}
+            {jornadas.length === 0 && (
+              <p style={{ color: 'var(--tinta-suave)', fontStyle: 'italic', fontFamily: 'var(--fonte-titulo)' }}>As jornadas chegam em breve.</p>
+            )}
+          </div>
+
+          {concluidos.length > 0 && (
+            <div style={{ marginTop: 'var(--espaco-3)' }}>
+              <p style={{ color: 'var(--ambar)', fontSize: 'var(--corpo-pequeno)', fontFamily: 'var(--fonte-titulo)', fontStyle: 'italic', margin: '0 0 var(--espaco-1)' }}>Jornadas que você fez</p>
+              <div style={{ display: 'grid', gap: 'var(--espaco-1)' }}>
+                {concluidos.map((p) => (
+                  <button key={p.id} className="card" onClick={() => setVista({ tela: 'percurso', percursoId: p.id })}
+                    style={{ textAlign: 'left', cursor: 'pointer' }}>
+                    <p style={{ margin: 0, fontFamily: 'var(--fonte-titulo)', fontStyle: 'italic' }}>{p.jornada_titulo}</p>
+                    <p style={{ margin: '4px 0 0', color: 'var(--tinta-suave)', fontSize: 'var(--corpo-pequeno)' }}>
+                      concluída em {formatarDia(new Date(p.concluido_em).toISOString().slice(0, 10))}, toque pra reler
+                    </p>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+
+// Contrato de entrada: o que é, quantos dias, o convite. Ela confirma pra começar.
+function Contrato({ jornada, onVoltar, onComecou }) {
+  const [estado, setEstado] = useState('inicio'); // inicio | comecando | erro
+
+  async function comecar() {
+    setEstado('comecando');
+    try {
+      const percurso = await iniciarPercurso(jornada);
+      await gerarProximoDiaJornada(percurso.id); // gera o dia 1
+      onComecou(percurso.id);
+    } catch (e) {
+      const m = e?.message;
+      // Bloqueio de crédito abre a tela de plano global; aqui só voltamos ao início.
+      setEstado(m === 'sem_creditos' || m === 'precisa_plano' ? 'inicio' : 'erro');
+    }
+  }
+
+  return (
+    <div className="card-escuro" style={{ marginBottom: 'var(--espaco-5)' }}>
+      <button onClick={onVoltar} style={{ background: 'none', border: 'none', color: 'var(--sobre-escuro-suave)', cursor: 'pointer', fontStyle: 'italic', fontFamily: 'var(--fonte-titulo)', padding: 0, marginBottom: 'var(--espaco-2)' }}>← voltar</button>
+      <h3 style={{ fontStyle: 'italic', marginTop: 0, fontSize: 'var(--titulo-md)' }}>{jornada.titulo}</h3>
+      {jornada.convite && <p style={{ lineHeight: 1.6, marginTop: 0 }}>{jornada.convite}</p>}
+      <p style={{ color: 'var(--sobre-escuro-suave)', fontSize: 'var(--corpo-pequeno)', marginBottom: 'var(--espaco-3)' }}>
+        {jornada.dias} dias, um por dia. Cada dia é uma conversa que a Val escreve só pra você, e consome do seu pacote. Sem taxímetro, no seu tempo.
+      </p>
+      {estado === 'comecando' ? (
+        <p style={{ fontFamily: 'var(--fonte-titulo)', fontStyle: 'italic', color: 'var(--sobre-escuro-suave)', margin: 0 }}>Abrindo o seu primeiro dia…</p>
+      ) : (
+        <button className="botao-suave" style={corBotaoEscuro} onClick={comecar}>começar</button>
+      )}
+      {estado === 'erro' && (
+        <p style={{ color: 'var(--sobre-escuro-suave)', fontSize: 'var(--corpo-pequeno)', margin: 'var(--espaco-1) 0 0' }}>Não consegui abrir agora. Respira, tenta de novo daqui a pouco.</p>
+      )}
+    </div>
+  );
+}
+
+// O percurso vivo: retomada, o dia atual (abertura + resposta), liberar o próximo
+// dia no ritmo, e o fechamento quando termina.
+function Percurso({ percursoId, onVoltar, onRepetir, onNavegar }) {
+  const [percurso, setPercurso] = useState(null);
+  const [dias, setDias] = useState([]);
+  const [carregando, setCarregando] = useState(true);
+  const [resp, setResp] = useState('');
+  const [gerando, setGerando] = useState(false);
+  const [aviso, setAviso] = useState(null); // 'aguarde' | 'erro' | null
+
+  const carregar = useCallback(async () => {
+    const ps = await lerPercursos();
+    setPercurso(ps.find((x) => x.id === percursoId) ?? null);
+    setDias(await lerDias(percursoId));
+    setCarregando(false);
+  }, [percursoId]);
+  useEffect(() => { carregar(); }, [carregar]);
+
+  if (carregando) return <div className="card-escuro" style={{ marginBottom: 'var(--espaco-5)' }}><p style={{ color: 'var(--sobre-escuro-suave)', fontStyle: 'italic', fontFamily: 'var(--fonte-titulo)', margin: 0 }}>um instante…</p></div>;
+  if (!percurso) return null;
+
+  // Fechamento: a devolutiva final + o caminho + o que vem depois.
+  if (percurso.concluido_em) {
+    return (
+      <div style={{ marginBottom: 'var(--espaco-5)' }}>
+        <button onClick={onVoltar} style={{ background: 'none', border: 'none', color: 'var(--tinta-suave)', cursor: 'pointer', fontStyle: 'italic', fontFamily: 'var(--fonte-titulo)', padding: 0, marginBottom: 'var(--espaco-2)' }}>← jornadas</button>
+        <div className="card-escuro">
+          <p style={{ color: 'var(--ambar)', fontSize: 'var(--corpo-pequeno)', fontFamily: 'var(--fonte-titulo)', fontStyle: 'italic', margin: 0 }}>{percurso.jornada_titulo}, concluída</p>
+          <p style={{ fontFamily: 'var(--fonte-titulo)', fontStyle: 'italic', fontSize: 'var(--titulo-sm)', lineHeight: 1.6, whiteSpace: 'pre-wrap', margin: 'var(--espaco-2) 0 0' }}>{percurso.fechamento}</p>
+          <div style={{ display: 'flex', gap: 'var(--espaco-1)', flexWrap: 'wrap', marginTop: 'var(--espaco-3)' }}>
+            <button className="botao-suave" style={corBotaoEscuro} onClick={onVoltar}>fazer outra jornada</button>
+            <button className="botao-suave" style={corBotaoEscuro} onClick={() => onRepetir(percurso.jornada_id)}>repetir essa</button>
+          </div>
+        </div>
+        <Caminho dias={dias} />
+      </div>
+    );
+  }
+
+  const total = percurso.jornada_dias;
+  const diaAtual = dias.find((d) => d.dia === percurso.dia_atual);
+  const respondido = diaAtual && diaAtual.respondido_em;
+  const lib = liberacao(percurso, dias);
+  const anteriores = dias.filter((d) => d.dia < percurso.dia_atual);
+
+  async function salvarResposta() {
+    const t = resp.trim();
+    if (!t || !diaAtual) return;
+    await responderDia(diaAtual.id, t).catch(() => {});
+    setResp('');
+    await carregar();
+  }
+
+  async function liberarProximo() {
+    setGerando(true);
+    setAviso(null);
+    try {
+      await gerarProximoDiaJornada(percursoId);
+      await carregar();
+    } catch (e) {
+      const m = e?.message;
+      if (m === 'aguarde' || m === 'responda_antes') setAviso('aguarde');
+      else if (m === 'sem_creditos' || m === 'precisa_plano') { /* tela de plano global */ }
+      else setAviso('erro');
+    } finally {
+      setGerando(false);
+    }
+  }
+
+  return (
+    <div style={{ marginBottom: 'var(--espaco-5)' }}>
+      <button onClick={onVoltar} style={{ background: 'none', border: 'none', color: 'var(--tinta-suave)', cursor: 'pointer', fontStyle: 'italic', fontFamily: 'var(--fonte-titulo)', padding: 0, marginBottom: 'var(--espaco-2)' }}>← jornadas</button>
+
+      <div className="card-escuro">
+        <p style={{ color: 'var(--ambar)', fontSize: 'var(--corpo-pequeno)', fontFamily: 'var(--fonte-titulo)', fontStyle: 'italic', margin: 0 }}>
+          {percurso.jornada_titulo}, dia {percurso.dia_atual} de {total}
+        </p>
+        {diaAtual && (
+          <p style={{ fontFamily: 'var(--fonte-titulo)', fontStyle: 'italic', fontSize: 'var(--titulo-sm)', lineHeight: 1.6, whiteSpace: 'pre-wrap', margin: 'var(--espaco-2) 0 0' }}>{diaAtual.abertura}</p>
+        )}
+
+        {!respondido ? (
+          <div style={{ marginTop: 'var(--espaco-2)' }}>
+            <textarea value={resp} onChange={(e) => setResp(e.target.value)} rows={3} placeholder="o que vier…" style={campoEscuro} />
+            <button className="botao-suave" style={{ ...corBotaoEscuro, marginTop: 'var(--espaco-1)' }} onClick={salvarResposta} disabled={!resp.trim()}>guardar</button>
+          </div>
+        ) : (
+          <div style={{ marginTop: 'var(--espaco-2)', paddingTop: 'var(--espaco-2)', borderTop: '1px dashed rgba(239,231,214,0.25)' }}>
+            <p style={{ color: 'var(--sobre-escuro-suave)', fontSize: 'var(--corpo-pequeno)', margin: 0 }}>você respondeu hoje. fica guardado.</p>
+            {gerando ? (
+              <p style={{ color: 'var(--sobre-escuro-suave)', fontStyle: 'italic', fontFamily: 'var(--fonte-titulo)', margin: 'var(--espaco-1) 0 0' }}>A Val está preparando o próximo dia…</p>
+            ) : lib.liberado ? (
+              <button className="botao-suave" style={{ ...corBotaoEscuro, marginTop: 'var(--espaco-1)' }} onClick={liberarProximo}>
+                {percurso.dia_atual + 1 >= total ? 'ver o fechamento' : 'abrir o próximo dia'}
+              </button>
+            ) : (
+              <p style={{ color: 'var(--sobre-escuro-suave)', fontStyle: 'italic', fontFamily: 'var(--fonte-titulo)', margin: 'var(--espaco-1) 0 0' }}>
+                O próximo dia abre amanhã. Sem pressa, ele te espera.
+              </p>
+            )}
+            {aviso === 'aguarde' && <p style={{ color: 'var(--sobre-escuro-suave)', fontSize: 'var(--corpo-pequeno)', margin: 'var(--espaco-1) 0 0' }}>O próximo dia ainda está descansando. Volte um pouco mais tarde.</p>}
+            {aviso === 'erro' && <p style={{ color: 'var(--sobre-escuro-suave)', fontSize: 'var(--corpo-pequeno)', margin: 'var(--espaco-1) 0 0' }}>Não veio agora. Tenta de novo daqui a pouco.</p>}
+          </div>
+        )}
+      </div>
+
+      <Caminho dias={anteriores} />
+    </div>
+  );
+}
+
+// O caminho já feito (retomada): pra ela reler os dias e nunca se perder.
+function Caminho({ dias }) {
+  const [aberto, setAberto] = useState(false);
+  const feitos = (dias ?? []).filter((d) => d.respondido_em || d.resposta);
+  if (!feitos.length) return null;
+  return (
+    <div style={{ marginTop: 'var(--espaco-2)' }}>
+      <button onClick={() => setAberto((v) => !v)} style={{ background: 'none', border: 'none', color: 'var(--tinta-suave)', cursor: 'pointer', fontStyle: 'italic', fontFamily: 'var(--fonte-titulo)', padding: 0 }}>
+        {aberto ? 'esconder o caminho' : `o caminho até aqui (${feitos.length})`}
+      </button>
+      {aberto && (
+        <div style={{ display: 'grid', gap: 'var(--espaco-1)', marginTop: 'var(--espaco-1)' }}>
+          {feitos.map((d) => (
+            <div key={d.id} className="card" style={{ padding: 'var(--espaco-2)' }}>
+              <p style={{ margin: 0, color: 'var(--tinta-suave)', fontSize: 'var(--corpo-pequeno)', fontStyle: 'italic', fontFamily: 'var(--fonte-titulo)' }}>dia {d.dia}, {d.prompt}</p>
+              {d.resposta && <p style={{ margin: '6px 0 0', whiteSpace: 'pre-wrap' }}>{d.resposta}</p>}
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
