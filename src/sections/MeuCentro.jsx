@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import Secao from '../components/Secao';
 import { db } from '../lib/db';
 import { usePerfil } from '../lib/useColecao';
-import { vincularEmail, sair, apagarMinhaConta } from '../lib/supabase';
+import { vincularEmail, sair, apagarMinhaConta, supabase, hasSupabase } from '../lib/supabase';
 import { exportarRegistros } from '../lib/exportar';
 import { lerAcesso } from '../lib/val';
 import { cancelarAssinatura } from '../lib/assinatura';
@@ -32,6 +32,7 @@ export default function MeuCentro({ sessao, onNavegar }) {
   return (
     <Secao titulo="Meu Centro" abertura="O chão de onde você fala. Muda quando você muda.">
       {sessao && <Conta sessao={sessao} />}
+      <PainelCuradora />
 
       <div style={{ display: 'grid', gap: 'var(--espaco-2)' }}>
         {CAMPOS.map((campo) => (
@@ -66,6 +67,31 @@ export default function MeuCentro({ sessao, onNavegar }) {
       <Assinatura />
       <Privacidade onNavegar={onNavegar} />
     </Secao>
+  );
+}
+
+// Acesso ao admin (só curadora): a Caixa vive em /?caixa, com cartas, fila de
+// curadoria e o cadastro das jornadas. Para as mulheres, nada disto aparece.
+function PainelCuradora() {
+  const [curadora, setCuradora] = useState(false);
+  useEffect(() => {
+    if (!hasSupabase) return;
+    supabase.from('curadoras').select('user_id').maybeSingle()
+      .then(({ data }) => setCuradora(Boolean(data)))
+      .catch(() => {});
+  }, []);
+  if (!curadora) return null;
+
+  return (
+    <div className="card-escuro" style={{ marginBottom: 'var(--espaco-3)' }}>
+      <h3 style={{ fontStyle: 'italic', marginTop: 0 }}>Área da Valéria</h3>
+      <p style={{ color: 'var(--sobre-escuro-suave)', marginTop: 0, fontSize: 'var(--corpo-pequeno)' }}>
+        O lado de dentro do app: as cartas que chegaram, a fila de curadoria, e o cadastro das jornadas.
+      </p>
+      <button className="botao-suave" style={{ color: 'var(--sobre-escuro)', borderColor: 'rgba(239,231,214,0.4)' }} onClick={() => window.location.assign('?caixa')}>
+        abrir o admin
+      </button>
+    </div>
   );
 }
 
