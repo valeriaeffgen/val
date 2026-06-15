@@ -154,6 +154,16 @@ export default function App() {
     if (sessao) registrarConsentimento();
   }, [sessao]);
 
+  // A conta logada é uma curadora? Se for, mostramos o link do Admin no rodapé
+  // (a Caixa/Jornadas vive em /?caixa). Para as mulheres, nada disto aparece.
+  const [curadora, setCuradora] = useState(false);
+  useEffect(() => {
+    if (!hasSupabase || !sessao || sessao.user?.is_anonymous) { setCuradora(false); return; }
+    supabase.from('curadoras').select('user_id').maybeSingle()
+      .then(({ data }) => setCuradora(Boolean(data)))
+      .catch(() => setCuradora(false));
+  }, [sessao]);
+
   // Volta do checkout do Asaas (FASE 3): um aceno sereno enquanto o webhook
   // confirma o pagamento e libera os créditos (segundos).
   const [pagoOk, setPagoOk] = useState(false);
@@ -339,6 +349,7 @@ export default function App() {
         <button onClick={irVideos}>Vídeos</button>
         <button onClick={irPolitica}>Privacidade</button>
         <button onClick={() => setSaindo(true)}>Encerrar visita</button>
+        {curadora && <button onClick={() => window.location.assign('?caixa')}>Admin</button>}
       </footer>
 
       <GratidaoWidget pedidoAbertura={aberturaGrat} />
