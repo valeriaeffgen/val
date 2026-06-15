@@ -310,6 +310,12 @@ function Percurso({ percursoId, onVoltar, onRepetir, onNavegar }) {
         <div className="card-escuro">
           <p style={{ color: 'var(--ambar)', fontSize: 'var(--corpo-pequeno)', fontFamily: 'var(--fonte-titulo)', fontStyle: 'italic', margin: 0 }}>{percurso.jornada_titulo}, concluída</p>
           <p style={{ fontFamily: 'var(--fonte-titulo)', fontStyle: 'italic', fontSize: 'var(--titulo-sm)', lineHeight: 1.6, whiteSpace: 'pre-wrap', margin: 'var(--espaco-2) 0 0' }}>{percurso.fechamento}</p>
+          {percurso.fechamento_tarefa && (
+            <div style={{ marginTop: 'var(--espaco-3)', paddingTop: 'var(--espaco-2)', borderTop: '1px dashed rgba(239,231,214,0.25)' }}>
+              <p style={{ color: 'var(--ambar)', fontSize: 'var(--corpo-pequeno)', fontFamily: 'var(--fonte-titulo)', fontStyle: 'italic', margin: 0 }}>pra levar com você</p>
+              <p style={{ color: 'var(--sobre-escuro)', margin: '4px 0 0', lineHeight: 1.55 }}>{percurso.fechamento_tarefa}</p>
+            </div>
+          )}
           <div style={{ display: 'flex', gap: 'var(--espaco-1)', flexWrap: 'wrap', marginTop: 'var(--espaco-3)' }}>
             <button className="botao-suave" style={corBotaoEscuro} onClick={onVoltar}>fazer outra jornada</button>
             <button className="botao-suave" style={corBotaoEscuro} onClick={() => onRepetir(percurso.jornada_id)}>repetir essa</button>

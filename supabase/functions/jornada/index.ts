@@ -48,11 +48,16 @@ const TAREFA_DIA = `Gere o dia de hoje desta jornada para ela. Responda APENAS c
 
 Em tudo: sem travessão, sem emoji, sem exclamação, sem aforismo.`;
 
-const TAREFA_FECHAMENTO = `Esta é a devolutiva final, a mais importante da jornada. Leia tudo o que ela viveu, as respostas e como foram as tarefas dia a dia, do primeiro ao último, e devolva a ela a TRANSFORMAÇÃO.
+const TAREFA_FECHAMENTO = `Esta é a despedida da jornada. Responda APENAS com um JSON válido, sem nenhum texto fora dele, no formato:
+{"devolutiva": "...", "tarefa": "..."}
+
+"devolutiva" (a mais importante): leia tudo o que ela viveu, as respostas e como foram as tarefas dia a dia, do primeiro ao último, e devolva a ela a TRANSFORMAÇÃO.
 - Mostre o caminho que ela andou, nomeando momentos concretos que ela trouxe (no dia tal, quando ela disse..., quando ela tentou a tarefa de...), e o que foi mudando.
-- De seis a dez frases, com ternura e lucidez, sem inflar, sem bajular, sem coaching.
-- Honre a intenção do fechamento que a Valéria curou (acima).
-- Sem travessão, sem aforismo, sem emoji. Pode terminar com uma frase que fica ou uma única pergunta suave. Devolva só a devolutiva, em texto puro.`;
+- De seis a dez frases, com ternura e lucidez, sem inflar, sem bajular, sem coaching. Honre o enquadramento do fechamento que a Valéria curou.
+
+"tarefa" (o gesto de despedida): parta da intenção de despedida que a Valéria curou (vou te dar) e devolva, na sua voz, um gesto leve pra ela levar da jornada. Micro-gesto, convite, nunca cobrança.
+
+Em tudo: sem travessão, sem aforismo, sem emoji.`;
 
 const cors = {
   "Access-Control-Allow-Origin": "*",
@@ -81,18 +86,26 @@ function memoriaDosDias(dias: any[]): string {
   return `O QUE ELA JÁ VIVEU NESTA JORNADA (use pra ligar os dias, puxe só o que cabe hoje, nunca despeje tudo):\n${linhas}`;
 }
 
-// O modelo devolve JSON; se escorregar, caímos no texto como reflexão e na
-// intenção curada do arco como tarefa. Nunca quebra na cara da mulher.
-function parseDia(texto: string, tarefaArco: string): { reflexao: string; tarefa: string } {
-  let reflexao = texto;
-  let tarefa = tarefaArco;
+// O modelo devolve JSON; se escorregar, lemos o texto como o campo principal e
+// usamos a intenção curada do arco como tarefa. Nunca quebra na cara da mulher.
+function parseJson(texto: string): any | null {
   try {
-    const limpo = texto.replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/i, "").trim();
-    const obj = JSON.parse(limpo);
-    if (obj?.reflexao) reflexao = String(obj.reflexao).trim();
-    if (obj?.tarefa) tarefa = String(obj.tarefa).trim();
-  } catch { /* mantém o fallback */ }
-  return { reflexao, tarefa };
+    return JSON.parse(texto.replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/i, "").trim());
+  } catch { return null; }
+}
+function parseDia(texto: string, tarefaArco: string): { reflexao: string; tarefa: string } {
+  const obj = parseJson(texto);
+  return {
+    reflexao: obj?.reflexao ? String(obj.reflexao).trim() : texto,
+    tarefa: obj?.tarefa ? String(obj.tarefa).trim() : tarefaArco,
+  };
+}
+function parseFechamento(texto: string, tarefaArco: string): { devolutiva: string; tarefa: string } {
+  const obj = parseJson(texto);
+  return {
+    devolutiva: obj?.devolutiva ? String(obj.devolutiva).trim() : texto,
+    tarefa: obj?.tarefa ? String(obj.tarefa).trim() : tarefaArco,
+  };
 }
 
 Deno.serve(async (req) => {
@@ -162,6 +175,7 @@ Deno.serve(async (req) => {
           `Jornada: "${jornada?.titulo ?? percurso.jornada_titulo}".`,
           `A intenção do fechamento que a Valéria curou: "${prompt}".`,
           reflexaoArco ? `O enquadramento do fechamento que a Valéria curou (base pra você abrir, na sua voz): "${reflexaoArco}".` : "",
+          tarefaArco ? `A intenção da tarefa de despedida que a Valéria curou: "${tarefaArco}".` : "",
           memoria,
           TAREFA_FECHAMENTO,
         ].filter(Boolean).join("\n\n")
@@ -195,10 +209,11 @@ Deno.serve(async (req) => {
 
     const agora = new Date().toISOString();
     if (ehFechamento) {
+      const { devolutiva, tarefa } = parseFechamento(texto, tarefaArco);
       await supabase.from("prosperidade_percursos")
-        .update({ fechamento: texto, concluido_em: agora, dia_atual: proxDia, ultimo_dia_em: agora })
+        .update({ fechamento: devolutiva, fechamento_tarefa: tarefa, concluido_em: agora, dia_atual: proxDia, ultimo_dia_em: agora })
         .eq("id", percursoId);
-      return json({ tipo: "fechamento", dia: proxDia, total: totalDias, texto });
+      return json({ tipo: "fechamento", dia: proxDia, total: totalDias, texto: devolutiva, tarefa });
     }
 
     const { reflexao, tarefa } = parseDia(texto, tarefaArco);
