@@ -137,13 +137,15 @@ function ArcoEditor({ jornadaId }) {
 }
 
 function ArcoLinha({ arco, onMudou }) {
+  const [reflexao, setReflexao] = useState(arco.reflexao ?? '');
   const [prompt, setPrompt] = useState(arco.prompt);
   const [tarefa, setTarefa] = useState(arco.tarefa ?? '');
   const [fechamento, setFechamento] = useState(arco.fechamento);
   const [salvo, setSalvo] = useState(false);
 
   async function salvar() {
-    await supabase.from('prosperidade_jornada_arcos').update({ prompt, tarefa: tarefa || null, fechamento }).eq('id', arco.id);
+    await supabase.from('prosperidade_jornada_arcos')
+      .update({ reflexao: reflexao || null, prompt, tarefa: tarefa || null, fechamento }).eq('id', arco.id);
     setSalvo(true);
     setTimeout(() => setSalvo(false), 1500);
     onMudou();
@@ -162,14 +164,12 @@ function ArcoLinha({ arco, onMudou }) {
           <input type="checkbox" checked={fechamento} onChange={(e) => setFechamento(e.target.checked)} /> é o fechamento
         </label>
       </div>
-      <label style={rotulo}>a pergunta (provoca)</label>
+      <label style={rotulo}>a reflexão (a Val abre): base que a Val reescreve na voz dela, ligando à tarefa de ontem</label>
+      <textarea value={reflexao} onChange={(e) => setReflexao(e.target.value)} rows={3} style={{ ...campo, resize: 'vertical' }} />
+      <label style={{ ...rotulo, marginTop: 'var(--espaco-1)' }}>a pergunta (provoca)</label>
       <textarea value={prompt} onChange={(e) => setPrompt(e.target.value)} rows={2} style={{ ...campo, resize: 'vertical' }} />
-      {!fechamento && (
-        <div style={{ marginTop: 'var(--espaco-1)' }}>
-          <label style={rotulo}>a tarefa (move): o micro-gesto até o dia seguinte, leve e factível, nunca estruturante</label>
-          <textarea value={tarefa} onChange={(e) => setTarefa(e.target.value)} rows={2} style={{ ...campo, resize: 'vertical' }} placeholder="ex.: hoje, descanse 15 minutos sem ter terminado nada antes, só porque sim." />
-        </div>
-      )}
+      <label style={{ ...rotulo, marginTop: 'var(--espaco-1)' }}>a tarefa (move): o micro-gesto até o dia seguinte, leve e factível, nunca estruturante</label>
+      <textarea value={tarefa} onChange={(e) => setTarefa(e.target.value)} rows={2} style={{ ...campo, resize: 'vertical' }} placeholder="ex.: hoje, descanse dez minutos sem ter terminado nada antes, só porque sim." />
       <div style={{ display: 'flex', gap: 'var(--espaco-1)', marginTop: 'var(--espaco-1)', alignItems: 'center' }}>
         <button className="botao-suave" onClick={salvar} style={{ padding: '6px 14px' }}>salvar</button>
         <button onClick={remover} style={{ background: 'none', border: 'none', color: 'var(--tinta-suave)', cursor: 'pointer', fontSize: 'var(--corpo-pequeno)' }}>remover</button>

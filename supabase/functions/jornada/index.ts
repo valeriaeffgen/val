@@ -41,10 +41,10 @@ SEGURANÇA (prevalece sobre tudo): você é suporte dos pequenos momentos, o apo
 const TAREFA_DIA = `Gere o dia de hoje desta jornada para ela. Responda APENAS com um JSON válido, sem nenhum texto fora dele, no formato:
 {"reflexao": "...", "tarefa": "..."}
 
-"reflexao" (a Val ensina): uma reflexão curta na sua voz, de duas a quatro frases, sobre o degrau de hoje, por que a gente olha pra isso hoje. Ensina como amiga que medita, NUNCA como aula, NUNCA aforismo, NUNCA pôster. Revela algo concreto, não enfeita. NÃO repita a pergunta de hoje, ela aparece logo depois de você, só prepare o terreno.
+"reflexao" (a Val ensina): parta da reflexão que a Valéria curou para hoje (vou te dar abaixo) e devolva-a na SUA voz, mantendo o sentido e o tom, podendo encurtar ou ajustar palavras, sem inventar outro assunto. Ensina como amiga que medita, NUNCA aula, NUNCA aforismo, NUNCA pôster. NÃO repita a pergunta de hoje, ela aparece logo depois de você.
 - Se houver um dia anterior, COMECE retomando, com leveza, como foi a tarefa de ontem a partir do que ela registrou, e ligue isso ao degrau de hoje. Se ela não fez a tarefa, ou não registrou, acolha sem nenhuma cobrança, deixe claro que o convite continua, e siga. Nunca soe como dever de casa.
 
-"tarefa" (a Val move): um convite a FAZER uma coisa concreta até amanhã, ligada ao tema de hoje, a partir da intenção curada que vou te dar. É um micro-gesto de consciência, leve e factível em minutos, adaptado ao que ela trouxe hoje. NUNCA uma ação estruturante ou estratégica (nada de planilha, contrato, plano, método, reestruturar preço), isso é reservado a outro lugar. Convite, nunca cobrança ("se vier", "se você quiser"), nunca ordem dura.
+"tarefa" (a Val move): parta da intenção da tarefa que a Valéria curou (vou te dar abaixo) e devolva um convite a FAZER essa coisa concreta até amanhã, na sua voz, adaptado ao que ela trouxe hoje. É um micro-gesto de consciência, leve e factível em minutos. NUNCA uma ação estruturante ou estratégica (nada de planilha, contrato, plano, método, reestruturar preço), isso é reservado a outro lugar. Convite, nunca cobrança ("se vier", "se você quiser"), nunca ordem dura.
 
 Em tudo: sem travessão, sem emoji, sem exclamação, sem aforismo.`;
 
@@ -137,7 +137,7 @@ Deno.serve(async (req) => {
     }
 
     const { data: arco } = await supabase
-      .from("prosperidade_jornada_arcos").select("prompt, tarefa, fechamento")
+      .from("prosperidade_jornada_arcos").select("prompt, tarefa, reflexao, fechamento")
       .eq("jornada_id", percurso.jornada_id).eq("dia", proxDia).maybeSingle();
     const { data: jornada } = await supabase
       .from("prosperidade_jornadas").select("titulo, fronteira").eq("id", percurso.jornada_id).maybeSingle();
@@ -146,6 +146,7 @@ Deno.serve(async (req) => {
     const ehFechamento = Boolean(arco?.fechamento) || proxDia >= totalDias;
     const prompt = arco?.prompt ?? "fechamento desta jornada";
     const tarefaArco = arco?.tarefa ?? "";
+    const reflexaoArco = arco?.reflexao ?? "";
 
     // Crédito (FASE 2): 1 por dia gerado, mesmo gerando reflexão e tarefa juntas.
     const authHeader = req.headers.get("Authorization") ?? "";
@@ -160,11 +161,13 @@ Deno.serve(async (req) => {
       ? [
           `Jornada: "${jornada?.titulo ?? percurso.jornada_titulo}".`,
           `A intenção do fechamento que a Valéria curou: "${prompt}".`,
+          reflexaoArco ? `O enquadramento do fechamento que a Valéria curou (base pra você abrir, na sua voz): "${reflexaoArco}".` : "",
           memoria,
           TAREFA_FECHAMENTO,
         ].filter(Boolean).join("\n\n")
       : [
           `Jornada: "${jornada?.titulo ?? percurso.jornada_titulo}". Hoje é o dia ${proxDia} de ${totalDias}.`,
+          reflexaoArco ? `A reflexão de hoje que a Valéria curou (base pra você reescrever na sua voz): "${reflexaoArco}".` : "",
           `A pergunta de hoje que a Valéria curou (NÃO a repita na reflexão): "${prompt}".`,
           tarefaArco ? `A intenção da tarefa de hoje que a Valéria curou: "${tarefaArco}".` : "",
           memoria,
