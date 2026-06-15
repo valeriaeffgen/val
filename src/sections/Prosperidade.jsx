@@ -18,10 +18,10 @@ import { fechoProsperidade } from '../lib/val';
  * O fecho é a única parte paga (1 crédito). Convite, nunca cobrança, e o acúmulo
  * aparece com carinho, jamais como streak.
  */
-export default function Prosperidade() {
+export default function Prosperidade({ onNavegar, onGratidao }) {
   return (
     <Secao titulo="Prosperidade" abertura="reconhecer o que já é seu, e agir com clareza">
-      <Hoje />
+      <Hoje onNavegar={onNavegar} onGratidao={onGratidao} />
       <Jornadas />
       <Acervo />
     </Secao>
@@ -31,9 +31,10 @@ export default function Prosperidade() {
 const cap = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);
 const corBotaoEscuro = { color: 'var(--sobre-escuro)', borderColor: 'rgba(239,231,214,0.4)' };
 const campoEscuro = { width: '100%', boxSizing: 'border-box', resize: 'vertical', border: '1px solid rgba(239,231,214,0.3)', background: 'rgba(0,0,0,0.12)', color: 'var(--sobre-escuro)', borderRadius: 'var(--raio-sm)', padding: '10px var(--espaco-2)' };
+const linkEscuro = { background: 'none', border: 'none', color: 'var(--sobre-escuro-suave)', fontStyle: 'italic', fontFamily: 'var(--fonte-titulo)', cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: 3, padding: 0, fontSize: 'var(--corpo-pequeno)' };
 
 // --- Ritual diário "Hoje" (card escuro: o ritual central da tela) -------------
-function Hoje() {
+function Hoje({ onNavegar, onGratidao }) {
   const registros = useColecao('prosperidade').filter((r) => r.tipo === 'hoje');
   const [angulo, setAngulo] = useState('');
   const [fechoACada, setFechoACada] = useState(7);
@@ -115,6 +116,14 @@ function Hoje() {
             <>
               <p style={{ fontFamily: 'var(--fonte-titulo)', fontStyle: 'italic', fontSize: 'var(--titulo-sm)', lineHeight: 1.5, margin: 0 }}>{fecho}</p>
               <p style={{ color: 'var(--sobre-escuro-suave)', fontSize: 'var(--corpo-pequeno)', margin: 'var(--espaco-1) 0 0' }}>guardei esse espelho no seu acervo.</p>
+              <div style={{ display: 'flex', gap: 'var(--espaco-3)', flexWrap: 'wrap', marginTop: 'var(--espaco-2)' }}>
+                <button onClick={() => onNavegar?.({ secao: 'conversar', mensagem: 'Quero conversar sobre o que venho reconhecendo como meu.' })} style={linkEscuro}>
+                  conversar com a Val sobre isso
+                </button>
+                <button onClick={() => onGratidao?.()} style={linkEscuro}>
+                  registrar uma gratidão
+                </button>
+              </div>
             </>
           ) : ofertaFecho ? (
             <>
