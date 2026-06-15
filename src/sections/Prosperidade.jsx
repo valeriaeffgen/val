@@ -5,7 +5,7 @@ import { formatarDia } from '../lib/datas';
 import { useColecao } from '../lib/useColecao';
 import { TIPOS_PROSPERIDADE } from '../data/seed';
 import { lerAngulosHoje, lerFechoACada, anguloDoDia } from '../lib/prosperidade';
-import { lerJornadas, lerPercursos, lerDias, iniciarPercurso, responderDia, liberacao } from '../lib/jornadas';
+import { lerJornadas, lerPercursos, lerDias, iniciarPercurso, responderDia, responderAndamento, liberacao } from '../lib/jornadas';
 import { fechoProsperidade, gerarProximoDiaJornada } from '../lib/val';
 
 /*
@@ -287,6 +287,7 @@ function Percurso({ percursoId, onVoltar, onRepetir, onNavegar }) {
   const [dias, setDias] = useState([]);
   const [carregando, setCarregando] = useState(true);
   const [resp, setResp] = useState('');
+  const [andam, setAndam] = useState('');
   const [gerando, setGerando] = useState(false);
   const [aviso, setAviso] = useState(null); // 'aguarde' | 'erro' | null
 
@@ -324,6 +325,7 @@ function Percurso({ percursoId, onVoltar, onRepetir, onNavegar }) {
   const respondido = diaAtual && diaAtual.respondido_em;
   const lib = liberacao(percurso, dias);
   const anteriores = dias.filter((d) => d.dia < percurso.dia_atual);
+  const proxEhFechamento = percurso.dia_atual + 1 >= total;
 
   async function salvarResposta() {
     const t = resp.trim();
@@ -333,11 +335,15 @@ function Percurso({ percursoId, onVoltar, onRepetir, onNavegar }) {
     await carregar();
   }
 
-  async function liberarProximo() {
+  // Abre o próximo dia: primeiro guarda o andamento da tarefa de ontem (se ela
+  // escreveu), que vira matéria da reflexão de hoje. Convite, nunca cobrança.
+  async function abrirProximo() {
     setGerando(true);
     setAviso(null);
     try {
+      if (andam.trim() && diaAtual) await responderAndamento(diaAtual.id, andam.trim()).catch(() => {});
       await gerarProximoDiaJornada(percursoId);
+      setAndam('');
       await carregar();
     } catch (e) {
       const m = e?.message;
@@ -357,27 +363,50 @@ function Percurso({ percursoId, onVoltar, onRepetir, onNavegar }) {
         <p style={{ color: 'var(--ambar)', fontSize: 'var(--corpo-pequeno)', fontFamily: 'var(--fonte-titulo)', fontStyle: 'italic', margin: 0 }}>
           {percurso.jornada_titulo}, dia {percurso.dia_atual} de {total}
         </p>
-        {diaAtual && (
+
+        {/* 1ª perna: a reflexão (a Val ensina) */}
+        {diaAtual?.abertura && (
           <p style={{ fontFamily: 'var(--fonte-titulo)', fontStyle: 'italic', fontSize: 'var(--titulo-sm)', lineHeight: 1.6, whiteSpace: 'pre-wrap', margin: 'var(--espaco-2) 0 0' }}>{diaAtual.abertura}</p>
         )}
 
+        {/* 2ª perna: a pergunta (provoca), e ela responde */}
+        {diaAtual && (
+          <p style={{ color: 'var(--sobre-escuro)', margin: 'var(--espaco-2) 0 0', fontWeight: 600 }}>{diaAtual.prompt}</p>
+        )}
+
         {!respondido ? (
-          <div style={{ marginTop: 'var(--espaco-2)' }}>
+          <div style={{ marginTop: 'var(--espaco-1)' }}>
             <textarea value={resp} onChange={(e) => setResp(e.target.value)} rows={3} placeholder="o que vier…" style={campoEscuro} />
             <button className="botao-suave" style={{ ...corBotaoEscuro, marginTop: 'var(--espaco-1)' }} onClick={salvarResposta} disabled={!resp.trim()}>guardar</button>
           </div>
         ) : (
           <div style={{ marginTop: 'var(--espaco-2)', paddingTop: 'var(--espaco-2)', borderTop: '1px dashed rgba(239,231,214,0.25)' }}>
-            <p style={{ color: 'var(--sobre-escuro-suave)', fontSize: 'var(--corpo-pequeno)', margin: 0 }}>você respondeu hoje. fica guardado.</p>
+            {/* 3ª perna: a tarefa (move), revelada depois da resposta */}
+            {diaAtual?.tarefa && (
+              <>
+                <p style={{ color: 'var(--ambar)', fontSize: 'var(--corpo-pequeno)', fontFamily: 'var(--fonte-titulo)', fontStyle: 'italic', margin: 0 }}>a tarefa de hoje, se vier</p>
+                <p style={{ color: 'var(--sobre-escuro)', margin: '4px 0 0', lineHeight: 1.5 }}>{diaAtual.tarefa}</p>
+              </>
+            )}
+
             {gerando ? (
-              <p style={{ color: 'var(--sobre-escuro-suave)', fontStyle: 'italic', fontFamily: 'var(--fonte-titulo)', margin: 'var(--espaco-1) 0 0' }}>A Val está preparando o próximo dia…</p>
+              <p style={{ color: 'var(--sobre-escuro-suave)', fontStyle: 'italic', fontFamily: 'var(--fonte-titulo)', margin: 'var(--espaco-2) 0 0' }}>A Val está preparando o próximo dia…</p>
             ) : lib.liberado ? (
-              <button className="botao-suave" style={{ ...corBotaoEscuro, marginTop: 'var(--espaco-1)' }} onClick={liberarProximo}>
-                {percurso.dia_atual + 1 >= total ? 'ver o fechamento' : 'abrir o próximo dia'}
-              </button>
+              <div style={{ marginTop: 'var(--espaco-2)' }}>
+                {/* ciclo diário: antes do próximo dia, como foi a tarefa de ontem */}
+                {diaAtual?.tarefa && (
+                  <>
+                    <p style={{ color: 'var(--sobre-escuro-suave)', fontSize: 'var(--corpo-pequeno)', margin: 0 }}>e a tarefa, como foi? (se não rolou, tudo bem, é só dizer)</p>
+                    <textarea value={andam} onChange={(e) => setAndam(e.target.value)} rows={2} placeholder="como foi pra você…" style={{ ...campoEscuro, marginTop: 4 }} />
+                  </>
+                )}
+                <button className="botao-suave" style={{ ...corBotaoEscuro, marginTop: 'var(--espaco-1)' }} onClick={abrirProximo}>
+                  {proxEhFechamento ? 'ver o fechamento' : 'abrir o próximo dia'}
+                </button>
+              </div>
             ) : (
-              <p style={{ color: 'var(--sobre-escuro-suave)', fontStyle: 'italic', fontFamily: 'var(--fonte-titulo)', margin: 'var(--espaco-1) 0 0' }}>
-                O próximo dia abre amanhã. Sem pressa, ele te espera.
+              <p style={{ color: 'var(--sobre-escuro-suave)', fontStyle: 'italic', fontFamily: 'var(--fonte-titulo)', margin: 'var(--espaco-2) 0 0' }}>
+                O próximo dia abre amanhã. Leva a tarefa com você, sem pressa, e me conta como foi quando voltar.
               </p>
             )}
             {aviso === 'aguarde' && <p style={{ color: 'var(--sobre-escuro-suave)', fontSize: 'var(--corpo-pequeno)', margin: 'var(--espaco-1) 0 0' }}>O próximo dia ainda está descansando. Volte um pouco mais tarde.</p>}
@@ -407,6 +436,11 @@ function Caminho({ dias }) {
             <div key={d.id} className="card" style={{ padding: 'var(--espaco-2)' }}>
               <p style={{ margin: 0, color: 'var(--tinta-suave)', fontSize: 'var(--corpo-pequeno)', fontStyle: 'italic', fontFamily: 'var(--fonte-titulo)' }}>dia {d.dia}, {d.prompt}</p>
               {d.resposta && <p style={{ margin: '6px 0 0', whiteSpace: 'pre-wrap' }}>{d.resposta}</p>}
+              {d.tarefa && (
+                <p style={{ margin: '8px 0 0', color: 'var(--tinta-suave)', fontSize: 'var(--corpo-pequeno)' }}>
+                  tarefa: {d.tarefa}{d.tarefa_andamento ? ` · como foi: ${d.tarefa_andamento}` : ''}
+                </p>
+              )}
             </div>
           ))}
         </div>

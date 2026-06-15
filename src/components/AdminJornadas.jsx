@@ -138,11 +138,12 @@ function ArcoEditor({ jornadaId }) {
 
 function ArcoLinha({ arco, onMudou }) {
   const [prompt, setPrompt] = useState(arco.prompt);
+  const [tarefa, setTarefa] = useState(arco.tarefa ?? '');
   const [fechamento, setFechamento] = useState(arco.fechamento);
   const [salvo, setSalvo] = useState(false);
 
   async function salvar() {
-    await supabase.from('prosperidade_jornada_arcos').update({ prompt, fechamento }).eq('id', arco.id);
+    await supabase.from('prosperidade_jornada_arcos').update({ prompt, tarefa: tarefa || null, fechamento }).eq('id', arco.id);
     setSalvo(true);
     setTimeout(() => setSalvo(false), 1500);
     onMudou();
@@ -154,14 +155,23 @@ function ArcoLinha({ arco, onMudou }) {
   }
 
   return (
-    <div style={{ display: 'flex', gap: 'var(--espaco-1)', alignItems: 'flex-start' }}>
-      <span style={{ minWidth: 28, color: 'var(--tinta-suave)', fontSize: 'var(--corpo-pequeno)', paddingTop: 10 }}>{arco.dia}</span>
-      <textarea value={prompt} onChange={(e) => setPrompt(e.target.value)} rows={2} style={{ ...campo, flex: 1, resize: 'vertical' }} />
-      <div style={{ display: 'grid', gap: 4, paddingTop: 4 }}>
-        <label style={{ fontSize: 'var(--corpo-pequeno)', color: 'var(--tinta-suave)', display: 'flex', gap: 4, alignItems: 'center', whiteSpace: 'nowrap' }}>
-          <input type="checkbox" checked={fechamento} onChange={(e) => setFechamento(e.target.checked)} /> fecho
+    <div className="card" style={{ padding: 'var(--espaco-2)', background: 'var(--papel)' }}>
+      <div style={{ display: 'flex', gap: 'var(--espaco-1)', alignItems: 'center', marginBottom: 6 }}>
+        <strong style={{ color: 'var(--verde-petroleo)', fontFamily: 'var(--fonte-titulo)', fontStyle: 'italic' }}>dia {arco.dia}</strong>
+        <label style={{ fontSize: 'var(--corpo-pequeno)', color: 'var(--tinta-suave)', display: 'flex', gap: 4, alignItems: 'center', marginLeft: 'auto' }}>
+          <input type="checkbox" checked={fechamento} onChange={(e) => setFechamento(e.target.checked)} /> é o fechamento
         </label>
-        <button className="botao-suave" onClick={salvar} style={{ padding: '6px 12px' }}>salvar</button>
+      </div>
+      <label style={rotulo}>a pergunta (provoca)</label>
+      <textarea value={prompt} onChange={(e) => setPrompt(e.target.value)} rows={2} style={{ ...campo, resize: 'vertical' }} />
+      {!fechamento && (
+        <div style={{ marginTop: 'var(--espaco-1)' }}>
+          <label style={rotulo}>a tarefa (move): o micro-gesto até o dia seguinte, leve e factível, nunca estruturante</label>
+          <textarea value={tarefa} onChange={(e) => setTarefa(e.target.value)} rows={2} style={{ ...campo, resize: 'vertical' }} placeholder="ex.: hoje, descanse 15 minutos sem ter terminado nada antes, só porque sim." />
+        </div>
+      )}
+      <div style={{ display: 'flex', gap: 'var(--espaco-1)', marginTop: 'var(--espaco-1)', alignItems: 'center' }}>
+        <button className="botao-suave" onClick={salvar} style={{ padding: '6px 14px' }}>salvar</button>
         <button onClick={remover} style={{ background: 'none', border: 'none', color: 'var(--tinta-suave)', cursor: 'pointer', fontSize: 'var(--corpo-pequeno)' }}>remover</button>
         {salvo && <span style={{ color: 'var(--ambar)', fontSize: 'var(--corpo-pequeno)', fontStyle: 'italic', fontFamily: 'var(--fonte-titulo)' }}>salvo</span>}
       </div>

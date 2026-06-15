@@ -60,6 +60,17 @@ export async function responderDia(diaId, resposta) {
   if (error) throw error;
 }
 
+// O andamento da tarefa de ontem (livre). Vira matéria da reflexão de hoje.
+// Convite, nunca cobrança: ela pode dizer que não fez, ou pular.
+export async function responderAndamento(diaId, andamento) {
+  if (!hasSupabase) throw new Error('sem-backend');
+  const { error } = await supabase
+    .from('prosperidade_percurso_dias')
+    .update({ tarefa_andamento: andamento, tarefa_andamento_em: new Date().toISOString() })
+    .eq('id', diaId);
+  if (error) throw error;
+}
+
 // Ritmo, sem cobrança: quando o próximo dia pode ser liberado. Espelha a regra
 // da função Edge, só pra UI mostrar "liberar" ou "volte no seu tempo".
 export function liberacao(percurso, dias) {
