@@ -236,12 +236,29 @@ export const MICRO_EXERCICIOS = [
 
 // Rótulos do acervo da Prosperidade, por tipo.
 export const TIPOS_PROSPERIDADE = {
+  hoje: 'Reconhecimentos do dia',
+  fecho: 'Espelhos da Val',
   consciencia: 'O que você enxergou',
   recurso: 'Recursos parados',
   habilidade: 'Habilidades suas',
   abundancia: 'Abundância que você já tem',
   preco: 'Sobre o que você cobra',
 };
+
+// Ângulos do ritual diário "Hoje" da Prosperidade. O gesto é sempre o mesmo
+// (reconhecer algo de prosperidade hoje), mas o ângulo gira a cada dia pra nunca
+// repetir. A fonte de verdade é a tabela `prosperidade_angulos` (editável no
+// admin); esta lista é só a semente e o fallback offline.
+export const ANGULOS_HOJE = [
+  'uma abundância material que você já tem e nem repara',
+  'um tempo seu hoje que foi bem gasto',
+  'uma habilidade sua que resolveu algo hoje',
+  'algo que você recebeu hoje sem ter pedido',
+  'uma pessoa que é parte da sua riqueza',
+  'um "não" que você conseguiu dar',
+  'algo que você sabe fazer e ainda trata como pouco',
+  'uma escolha que você tem hoje e antes não tinha',
+];
 
 // Gratidão (comportamento transversal): quando a mulher não acha um motivo, a
 // Val oferece o óbvio que se esquece, concreto e humilde. NUNCA abstrato.

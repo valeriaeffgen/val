@@ -88,14 +88,13 @@ export async function palavraDeHoje() {
 }
 
 /*
- * Prosperidade (camada 1: Consciência) — uma pergunta contemplativa gerada na
- * voz da Val a partir do contexto dela, com cache (uma por dia). Ver
- * supabase/functions/prosperidade.
+ * Prosperidade, o FECHO do ritual "Hoje": a Val lê o conjunto que ela vem
+ * reconhecendo e devolve um espelho que conecta os pontos. É a única parte paga
+ * do ritual (1 crédito). Ver supabase/functions/prosperidade.
  */
-export async function perguntaProsperidade() {
+export async function fechoProsperidade() {
   if (!hasSupabase) throw new Error('sem-backend');
-  const day = new Date().toISOString().slice(0, 10);
-  const { data, error } = await supabase.functions.invoke('prosperidade', { body: { day } });
+  const { data, error } = await supabase.functions.invoke('prosperidade', { body: {} });
   if (error) throw await sinalizarHttp(error);
   if (data?.erro) throw sinalizarErro(data.erro);
   return data?.texto ?? '';
