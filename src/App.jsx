@@ -169,8 +169,10 @@ export default function App() {
   const [curadora, setCuradora] = useState(false);
   useEffect(() => {
     if (!hasSupabase || !sessao || sessao.user?.is_anonymous) { setCuradora(false); return; }
-    supabase.from('curadoras').select('user_id').maybeSingle()
-      .then(({ data }) => setCuradora(Boolean(data)))
+    // Conta (head): a RLS só deixa uma curadora ver a lista, então count > 0
+    // significa curadora. Não usar maybeSingle: com 2+ curadoras ele erra.
+    supabase.from('curadoras').select('*', { count: 'exact', head: true })
+      .then(({ count }) => setCuradora((count ?? 0) > 0))
       .catch(() => setCuradora(false));
   }, [sessao]);
 

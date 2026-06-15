@@ -32,8 +32,10 @@ export default function Caixa() {
   }, []);
 
   const verificarCuradora = useCallback(async () => {
-    const { data } = await supabase.from('curadoras').select('user_id').maybeSingle();
-    const ehCuradora = Boolean(data);
+    // count > 0 ⇔ curadora (a RLS só deixa curadora ver a lista). maybeSingle
+    // erraria com mais de uma curadora cadastrada.
+    const { count } = await supabase.from('curadoras').select('*', { count: 'exact', head: true });
+    const ehCuradora = (count ?? 0) > 0;
     setCuradora(ehCuradora);
     if (ehCuradora) await Promise.all([carregarCartas(), carregarCuradoria()]);
   }, [carregarCartas, carregarCuradoria]);

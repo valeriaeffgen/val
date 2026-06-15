@@ -76,8 +76,10 @@ function PainelCuradora() {
   const [curadora, setCuradora] = useState(false);
   useEffect(() => {
     if (!hasSupabase) return;
-    supabase.from('curadoras').select('user_id').maybeSingle()
-      .then(({ data }) => setCuradora(Boolean(data)))
+    // count > 0 ⇔ curadora (a RLS só deixa curadora ver a lista). maybeSingle
+    // erraria com mais de uma curadora cadastrada.
+    supabase.from('curadoras').select('*', { count: 'exact', head: true })
+      .then(({ count }) => setCuradora((count ?? 0) > 0))
       .catch(() => {});
   }, []);
   if (!curadora) return null;
