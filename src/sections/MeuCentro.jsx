@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import Secao from '../components/Secao';
 import { db } from '../lib/db';
 import { usePerfil } from '../lib/useColecao';
-import { vincularEmail, sair, apagarMinhaConta, supabase, hasSupabase } from '../lib/supabase';
+import { vincularEmail, sair, apagarMinhaConta, definirSenha, supabase, hasSupabase } from '../lib/supabase';
 import { exportarRegistros } from '../lib/exportar';
 import { lerAcesso } from '../lib/val';
 import { cancelarAssinatura } from '../lib/assinatura';
@@ -288,6 +288,42 @@ function ApagarHistoria({ jaExportou, onExportar }) {
   );
 }
 
+// Trocar a senha, ali mesmo, sem sair da conta.
+function TrocarSenha() {
+  const [aberto, setAberto] = useState(false);
+  const [senha, setSenha] = useState('');
+  const [estado, setEstado] = useState('inicio'); // inicio | salvando | feito | erro
+
+  async function salvar(e) {
+    e.preventDefault();
+    if (senha.length < 6) { setEstado('erro'); return; }
+    setEstado('salvando');
+    const { error } = await definirSenha(senha);
+    setSenha('');
+    setEstado(error ? 'erro' : 'feito');
+    if (!error) setTimeout(() => { setAberto(false); setEstado('inicio'); }, 1800);
+  }
+
+  if (!aberto) {
+    return (
+      <p style={{ margin: 'var(--espaco-2) 0 0' }}>
+        <button onClick={() => setAberto(true)} style={{ background: 'none', border: 'none', padding: 0, color: 'var(--tinta-suave)', fontStyle: 'italic', fontFamily: 'var(--fonte-titulo)', cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: 3 }}>
+          alterar minha senha
+        </button>
+      </p>
+    );
+  }
+  return (
+    <form onSubmit={salvar} style={{ display: 'flex', gap: 'var(--espaco-1)', flexWrap: 'wrap', marginTop: 'var(--espaco-2)', alignItems: 'center' }}>
+      <input type="password" value={senha} onChange={(e) => setSenha(e.target.value)} placeholder="nova senha" autoComplete="new-password"
+        style={{ flex: 1, minWidth: 180, border: '1px solid var(--linha)', borderRadius: 'var(--raio-sm)', padding: '10px var(--espaco-2)', background: 'var(--papel)' }} />
+      <button type="submit" className="botao-suave" disabled={estado === 'salvando'}>{estado === 'salvando' ? 'guardando…' : 'guardar'}</button>
+      {estado === 'feito' && <span style={{ color: 'var(--ambar)', fontFamily: 'var(--fonte-titulo)', fontStyle: 'italic' }}>senha trocada.</span>}
+      {estado === 'erro' && <span style={{ color: 'var(--tinta-suave)', fontSize: 'var(--corpo-pequeno)' }}>use ao menos 6 caracteres.</span>}
+    </form>
+  );
+}
+
 // Sua conta: vincular e-mail (se ainda anônima) e sair.
 function Conta({ sessao }) {
   const anonima = sessao.user?.is_anonymous;
@@ -303,9 +339,12 @@ function Conta({ sessao }) {
 
   if (!anonima) {
     return (
-      <div className="card" style={{ marginBottom: 'var(--espaco-3)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 'var(--espaco-2)', flexWrap: 'wrap' }}>
-        <span style={{ color: 'var(--tinta-suave)' }}>Conectada como {sessao.user?.email}</span>
-        <button className="botao-suave" onClick={() => sair()}>sair</button>
+      <div className="card" style={{ marginBottom: 'var(--espaco-3)' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 'var(--espaco-2)', flexWrap: 'wrap' }}>
+          <span style={{ color: 'var(--tinta-suave)' }}>Conectada como {sessao.user?.email}</span>
+          <button className="botao-suave" onClick={() => sair()}>sair</button>
+        </div>
+        <TrocarSenha />
       </div>
     );
   }

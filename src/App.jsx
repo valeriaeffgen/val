@@ -9,6 +9,7 @@ import Videos from './sections/Videos';
 import Mural from './sections/Mural';
 import Caixa from './sections/Caixa';
 import Entrada from './sections/Entrada';
+import DefinirSenha from './sections/DefinirSenha';
 import Politica from './sections/Politica';
 import GratidaoWidget from './components/GratidaoWidget';
 import Plano from './components/Plano';
@@ -139,13 +140,22 @@ export default function App() {
     }).catch(() => setAcolhimento(false));
   }, [acolhimento, authCarregando, sessao]);
 
+  // Recuperação de senha: ao clicar no link de "esqueci", o Supabase abre uma
+  // sessão e dispara PASSWORD_RECOVERY. Aí mostramos a tela de criar a nova.
+  const [recuperando, setRecuperando] = useState(false);
+  // Ponte das contas antigas (sem senha): pulou criar agora? segue normal.
+  const [pulouSenha, setPulouSenha] = useState(false);
+
   useEffect(() => {
     if (!hasSupabase || MODO_CAIXA) { setAuthCarregando(false); return; }
     supabase.auth.getSession().then(({ data }) => {
       setSessao(data.session);
       setAuthCarregando(false);
     });
-    const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => setSessao(s));
+    const { data: sub } = supabase.auth.onAuthStateChange((evento, s) => {
+      setSessao(s);
+      if (evento === 'PASSWORD_RECOVERY') setRecuperando(true);
+    });
     return () => sub.subscription.unsubscribe();
   }, []);
 
@@ -283,6 +293,16 @@ export default function App() {
     }
     if (!sessao) {
       return <Entrada />;
+    }
+    // Veio pelo link de recuperação: criar a nova senha antes de tudo.
+    if (recuperando) {
+      return <DefinirSenha modo="recuperar" onConcluir={() => setRecuperando(false)} />;
+    }
+    // Conta antiga (criada por link mágico, sem senha): a ponte pra criar uma.
+    const u = sessao.user;
+    const precisaSenha = u && !u.is_anonymous && !u.user_metadata?.tem_senha;
+    if (precisaSenha && !pulouSenha) {
+      return <DefinirSenha modo="ponte" onConcluir={() => setPulouSenha(true)} onPular={() => setPulouSenha(true)} />;
     }
   }
 
