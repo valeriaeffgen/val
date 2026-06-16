@@ -40,26 +40,28 @@ export default function FechamentoDia({ onNavegar }) {
 
   async function fecharODia() {
     setEstado('gerando');
-    const paraFecho = [];
+    const respondidas = [];
     for (let i = 0; i < noite.length; i++) {
       const t = (respostas[i] ?? '').trim();
-      if (!t) continue;
-      await guardarResposta(noite[i].dimensao, noite[i].pergunta, t);
-      paraFecho.push({ dimensao: noite[i].dimensao.nome, pergunta: noite[i].pergunta, resposta: t });
+      if (t) respondidas.push({ idx: i, resposta: t });
     }
-    if (soltar.trim()) await guardarSoltar(soltar);
+    const solto = soltar.trim();
 
     // Se ela passou por aqui sem deixar nada, encerramos com carinho, sem gastar geração.
-    if (!paraFecho.length && !soltar.trim()) {
+    if (!respondidas.length && !solto) {
       setFecho('Você passou por aqui, e isso já basta. Descanse.');
       setEstado('pronto');
       return;
     }
     try {
-      const t = await gerarFechoDia(paraFecho, soltar.trim());
+      const paraFecho = respondidas.map((p) => ({ dimensao: noite[p.idx].dimensao.nome, pergunta: noite[p.idx].pergunta, resposta: p.resposta }));
+      const t = await gerarFechoDia(paraFecho, solto);
+      // Só DEPOIS do fecho dar certo guardamos tudo (livre), pra uma falha nunca duplicar.
+      for (const p of respondidas) await guardarResposta(noite[p.idx].dimensao, noite[p.idx].pergunta, p.resposta);
+      if (solto) await guardarSoltar(solto);
+      await guardarFecho(t);
       setFecho(t);
       setEstado('pronto');
-      await guardarFecho(t);
     } catch (e) {
       const m = e?.message;
       setEstado(m === 'sem_creditos' || m === 'precisa_plano' ? 'ritual' : 'erro');
