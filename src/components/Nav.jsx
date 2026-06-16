@@ -20,8 +20,8 @@ const CURTO = { 'olhar-pra-dentro': 'Pra dentro' };
 const GRUPOS = [
   ['conversar', 'como-lidar', 'soltar'],
   ['olhar-pra-dentro', 'autoamor', 'prosperidade'],
-  ['diario', 'fechar-dia', 'cartas'],
-  ['trajetoria', 'meu-centro'],
+  ['diario', 'cartas'],
+  ['trajetoria', 'meu-centro', 'fechar-dia'],
 ];
 
 // Os quatro da barra inferior do celular.
@@ -110,7 +110,12 @@ export default function Nav({ atual, onIr, estado, onVideos, onPolitica, onEncer
           <div className="val-sheet val-fade-in" role="dialog" aria-label="Mais seções">
             <div className="val-sheet-puxador" />
             {SECOES.map((s) => (
-              <button key={s.id} className={`val-sheet-item${atual === s.id ? ' ativo' : ''}`} onClick={() => ir(s.id)}>
+              <button
+                key={s.id}
+                className={`val-sheet-item${atual === s.id ? ' ativo' : ''}`}
+                onClick={() => ir(s.id)}
+                style={s.id === 'fechar-dia' ? { color: 'var(--ambar)', fontFamily: 'var(--fonte-titulo)', fontStyle: 'italic' } : undefined}
+              >
                 {s.rotulo}
               </button>
             ))}

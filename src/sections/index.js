@@ -23,8 +23,8 @@ export const SECOES = [
   { id: 'autoamor', rotulo: 'Autoamor', Componente: Autoamor },
   { id: 'prosperidade', rotulo: 'Prosperidade', Componente: Prosperidade },
   { id: 'diario', rotulo: 'Diário', Componente: Diario },
-  { id: 'fechar-dia', rotulo: 'Fechar o dia', Componente: FechamentoDia },
   { id: 'cartas', rotulo: 'Cartas', Componente: Cartas },
   { id: 'trajetoria', rotulo: 'Trajetória', Componente: Trajetoria },
   { id: 'meu-centro', rotulo: 'Meu Centro', Componente: MeuCentro },
+  { id: 'fechar-dia', rotulo: 'Fechar o dia', Componente: FechamentoDia },
 ];
