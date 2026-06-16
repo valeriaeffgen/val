@@ -7,7 +7,7 @@ import OfertaMuralGratidao from './OfertaMuralGratidao';
  * agitada recebe chão; neutra um convite suave; elevada é convidada a ancorar a
  * fórmula. Conteúdo (frase, sub, elevadores, palavra, ações) vem pronto do App.
  */
-export default function Chegada({ resposta, onAcao, onAncorar, onNavegar }) {
+export default function Chegada({ resposta, onAcao, onAncorar, onNavegar, noite }) {
   const [elev, setElev] = useState('');
   const [ancorado, setAncorado] = useState(false);
   if (!resposta) return null;
@@ -86,6 +86,16 @@ export default function Chegada({ resposta, onAcao, onAncorar, onNavegar }) {
 
       {/* Chegar pesada: oferecer reler a gratidão (alívio, só se houver motivos) */}
       {resposta.oferecerGratidao && <OfertaMuralGratidao onNavegar={onNavegar} />}
+
+      {/* Convite leve da noite: fechar o dia. Convite, nunca cobrança, e só à noite. */}
+      {noite && (
+        <div style={{ marginTop: 'var(--espaco-3)', paddingTop: 'var(--espaco-2)', borderTop: '1px dashed var(--linha)' }}>
+          <p style={{ margin: '0 0 var(--espaco-1)', color: 'var(--tinta-suave)', fontStyle: 'italic', fontFamily: 'var(--fonte-titulo)' }}>
+            Se quiser, a gente fecha o dia juntas antes de você dormir.
+          </p>
+          <button className="botao-suave" onClick={() => onNavegar?.({ secao: 'fechar-dia' })}>fechar o dia</button>
+        </div>
+      )}
     </section>
   );
 }

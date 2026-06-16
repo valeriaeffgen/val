@@ -37,6 +37,9 @@ function marcarBoasVindas() {
   try { localStorage.setItem(BOAS_VINDAS_KEY, '1'); } catch { /* ignore */ }
 }
 
+// É noite? (gatilho do convite leve pra fechar o dia, das 20h às 4h).
+const ehNoite = () => { const h = new Date().getHours(); return h >= 20 || h < 4; };
+
 // Sorteia n itens de um array (para os elevadores na chegada).
 function pick(arr, n) {
   const copia = [...(arr || [])];
@@ -344,7 +347,7 @@ export default function App() {
 
       <main style={{ flex: 1, width: '100%' }}>
         {resposta ? (
-          <Chegada resposta={resposta} onAcao={onAcao} onAncorar={ancorar} onNavegar={navegar} />
+          <Chegada resposta={resposta} onAcao={onAcao} onAncorar={ancorar} onNavegar={navegar} noite={ehNoite()} />
         ) : secaoId === 'videos' ? (
           <Videos />
         ) : secaoId === 'mural' ? (
