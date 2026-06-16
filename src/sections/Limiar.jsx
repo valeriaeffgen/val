@@ -5,7 +5,8 @@ import { ESTADOS_CHEGADA } from '../data/seed';
  * "Como você chega?" → pesada / agitada / neutra / elevada, com a descrição de
  * cada estado. Aparecer já é a vitória: dá pra "só entrar", sem escolher.
  */
-export default function Limiar({ onChegar, onPular }) {
+export default function Limiar({ onChegar, onPular, onFecharDia }) {
+  const link = { background: 'transparent', border: 'none', color: 'var(--tinta-suave)', fontFamily: 'var(--fonte-titulo)', fontStyle: 'italic', cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: 3 };
   return (
     <section style={{ minHeight: '100%', display: 'grid', placeItems: 'center', padding: 'var(--espaco-4) var(--espaco-3)' }}>
       <div style={{ maxWidth: 560, width: '100%', textAlign: 'center' }}>
@@ -39,12 +40,10 @@ export default function Limiar({ onChegar, onPular }) {
           ))}
         </div>
 
-        <button
-          onClick={onPular}
-          style={{ marginTop: 'var(--espaco-3)', background: 'transparent', border: 'none', color: 'var(--tinta-suave)', fontFamily: 'var(--fonte-titulo)', fontStyle: 'italic', cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: 3 }}
-        >
-          só entrar
-        </button>
+        <div style={{ marginTop: 'var(--espaco-3)', display: 'flex', gap: 'var(--espaco-3)', justifyContent: 'center', flexWrap: 'wrap' }}>
+          <button onClick={onPular} style={link}>só entrar</button>
+          {onFecharDia && <button onClick={onFecharDia} style={link}>fechar o dia</button>}
+        </div>
       </div>
     </section>
   );

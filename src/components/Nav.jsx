@@ -20,7 +20,7 @@ const CURTO = { 'olhar-pra-dentro': 'Pra dentro' };
 const GRUPOS = [
   ['conversar', 'como-lidar', 'soltar'],
   ['olhar-pra-dentro', 'autoamor', 'prosperidade'],
-  ['diario', 'cartas'],
+  ['diario', 'fechar-dia', 'cartas'],
   ['trajetoria', 'meu-centro'],
 ];
 

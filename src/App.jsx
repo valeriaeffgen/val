@@ -242,6 +242,14 @@ export default function App() {
     setSecaoId('conversar');
   }
 
+  // Entrar direto no Fechamento de Dia (acesso da página de entrada).
+  function aoFecharDia() {
+    setEntrou(true);
+    setVibe(null);
+    setResposta(null);
+    setSecaoId('fechar-dia');
+  }
+
   function abrirPausa(pergunta) {
     setPausaQ(pergunta || PAUSA_PERGUNTAS[Math.floor(Math.random() * PAUSA_PERGUNTAS.length)]);
     setPausa(true);
@@ -320,7 +328,7 @@ export default function App() {
     if (acolhimento) {
       return <BoasVindas onConcluir={concluirAcolhimento} />;
     }
-    return <Limiar onChegar={aoChegar} onPular={aoPular} />;
+    return <Limiar onChegar={aoChegar} onPular={aoPular} onFecharDia={aoFecharDia} />;
   }
 
   if (saindo) {
