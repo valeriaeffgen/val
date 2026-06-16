@@ -115,6 +115,18 @@ export async function gerarProximoDiaJornada(percursoId) {
 }
 
 /*
+ * Fechamento de Dia: o fecho gerado que lê o conjunto do dia, incluindo o que
+ * ela soltou. 1 crédito (guardar as respostas é livre). Ver functions/fechamento.
+ */
+export async function gerarFechoDia(respostas, soltar) {
+  if (!hasSupabase) throw new Error('sem-backend');
+  const { data, error } = await supabase.functions.invoke('fechamento', { body: { respostas, soltar } });
+  if (error) throw await sinalizarHttp(error);
+  if (data?.erro) throw sinalizarErro(data.erro);
+  return data?.texto ?? '';
+}
+
+/*
  * "O espelho" do Olhar pra dentro — devolutiva gerada das respostas dela à
  * jornada, com cache (regra 2). Ver supabase/functions/espelho.
  */
