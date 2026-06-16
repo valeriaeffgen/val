@@ -93,6 +93,28 @@ select d.id, v.texto, v.ordem from fechamento_dimensoes d join (values
 ) as v(texto, ordem) on d.slug = 'prosperidade'
 on conflict do nothing;
 
+-- Garante a tabela de configurações (criada na 0009), pra a 0016 não depender
+-- da ordem de aplicação. Idempotente: só cria o que faltar.
+create table if not exists configuracoes (
+  chave         text primary key,
+  valor         text not null,
+  atualizado_em timestamptz not null default now()
+);
+alter table configuracoes enable row level security;
+grant select on configuracoes to anon, authenticated;
+grant insert, update, delete on configuracoes to authenticated;
+do $$
+begin
+  if not exists (select 1 from pg_policies where tablename='configuracoes' and policyname='config_leitura')
+    then create policy config_leitura on configuracoes for select using (true); end if;
+  if not exists (select 1 from pg_policies where tablename='configuracoes' and policyname='config_curadora_ins')
+    then create policy config_curadora_ins on configuracoes for insert with check (is_curadora()); end if;
+  if not exists (select 1 from pg_policies where tablename='configuracoes' and policyname='config_curadora_upd')
+    then create policy config_curadora_upd on configuracoes for update using (is_curadora()) with check (is_curadora()); end if;
+  if not exists (select 1 from pg_policies where tablename='configuracoes' and policyname='config_curadora_del')
+    then create policy config_curadora_del on configuracoes for delete using (is_curadora()); end if;
+end $$;
+
 -- Config editável: a pergunta de soltar (fixa) e quantas dimensões por noite.
 insert into configuracoes (chave, valor) values
   ('fechamento_soltar_pergunta', 'Tem algo que ficou atravessado e você quer soltar antes de dormir?'),
