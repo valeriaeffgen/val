@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import Secao from '../components/Secao';
 import { lerDimensoes, lerPerguntas, lerConfigFechamento, sortear, guardarResposta, guardarSoltar, guardarFecho } from '../lib/fechamento';
-import { gerarFechoDia } from '../lib/val';
+import { lerPraticasOficiais, lerConfigPraticas, escolherDoBanco, tomDoDia, marcarPraticaUtil, podeOferecer, marcarOferecida } from '../lib/praticas';
+import { gerarFechoDia, gerarPratica } from '../lib/val';
 
 /*
  * Fechamento de Dia guiado (seções 6, 7 e 4). A Val pergunta "como foi o seu
@@ -12,7 +13,7 @@ import { gerarFechoDia } from '../lib/val';
  */
 const campo = { width: '100%', boxSizing: 'border-box', resize: 'vertical', border: '1px solid var(--linha)', borderRadius: 'var(--raio-sm)', padding: '10px var(--espaco-2)', background: 'var(--papel)' };
 
-export default function FechamentoDia({ onNavegar }) {
+export default function FechamentoDia({ onNavegar, chegada }) {
   const [carregando, setCarregando] = useState(true);
   const [noite, setNoite] = useState([]); // [{ dimensao, pergunta }]
   const [respostas, setRespostas] = useState({}); // idx -> texto
@@ -21,6 +22,7 @@ export default function FechamentoDia({ onNavegar }) {
   const [passo, setPasso] = useState(0);
   const [estado, setEstado] = useState('ritual'); // ritual | gerando | pronto | erro
   const [fecho, setFecho] = useState('');
+  const [tomDia, setTomDia] = useState('bom');
 
   useEffect(() => {
     let vivo = true;
@@ -46,6 +48,7 @@ export default function FechamentoDia({ onNavegar }) {
       if (t) respondidas.push({ idx: i, resposta: t });
     }
     const solto = soltar.trim();
+    setTomDia(tomDoDia({ vibe: chegada?.id, soltou: !!solto, temReconhecimento: respondidas.length > 0 }));
 
     // Se ela passou por aqui sem deixar nada, encerramos com carinho, sem gastar geração.
     if (!respondidas.length && !solto) {
@@ -73,7 +76,10 @@ export default function FechamentoDia({ onNavegar }) {
       {carregando ? (
         <p style={{ color: 'var(--tinta-suave)', fontStyle: 'italic', fontFamily: 'var(--fonte-titulo)' }}>um instante…</p>
       ) : estado === 'pronto' ? (
-        <Pronto fecho={fecho} onNavegar={onNavegar} />
+        <>
+          <Pronto fecho={fecho} onNavegar={onNavegar} />
+          <Pratica tom={tomDia} />
+        </>
       ) : (
         <>
           <p style={{ color: 'var(--tinta-suave)', marginTop: 0 }}>
@@ -131,6 +137,93 @@ export default function FechamentoDia({ onNavegar }) {
         </>
       )}
     </Secao>
+  );
+}
+
+// A prática de fechamento: convite OCASIONAL depois do fecho, conduzida passo a
+// passo, terminando na âncora. Servir do banco curado é livre; gerar uma nova
+// (renovação) custa 1 crédito, e na falha cai de volta no banco, sem susto.
+const corEscuro = { color: 'var(--sobre-escuro)', borderColor: 'rgba(239,231,214,0.4)' };
+
+function Pratica({ tom }) {
+  const [fase, setFase] = useState('decidindo'); // decidindo | oferta | carregando | conduzindo | fim | fora
+  const [oficiais, setOficiais] = useState([]);
+  const [cfg, setCfg] = useState({ cooldownHoras: 48, gerarChance: 0.25 });
+  const [pratica, setPratica] = useState(null);
+  const [passo, setPasso] = useState(0);
+  const [util, setUtil] = useState(false);
+
+  useEffect(() => {
+    let vivo = true;
+    Promise.all([lerPraticasOficiais(), lerConfigPraticas()]).then(([ps, c]) => {
+      if (!vivo) return;
+      setOficiais(ps);
+      setCfg(c);
+      if (podeOferecer(c.cooldownHoras)) { marcarOferecida(); setFase('oferta'); }
+      else setFase('fora');
+    }).catch(() => setFase('fora'));
+    return () => { vivo = false; };
+  }, []);
+
+  async function vamos() {
+    setFase('carregando');
+    const matches = oficiais.filter((p) => (p.tons ?? []).includes(tom));
+    const tentarGerar = oficiais.length && (matches.length === 0 || Math.random() < cfg.gerarChance);
+    let p = tentarGerar ? await gerarPratica(tom) : null; // renovação (1 crédito), pode falhar
+    if (!p) p = escolherDoBanco(oficiais, tom);            // servir do banco é livre
+    if (!p) { setFase('fora'); return; }
+    setPratica(p);
+    setPasso(0);
+    setFase('conduzindo');
+  }
+
+  function seguir() {
+    if (passo < (pratica.passos.length - 1)) setPasso(passo + 1);
+    else setFase('fim');
+  }
+
+  if (fase === 'decidindo' || fase === 'fora') return null;
+
+  return (
+    <div className="card-escuro" style={{ marginTop: 'var(--espaco-3)' }}>
+      {fase === 'oferta' && (
+        <>
+          <p style={{ margin: 0, lineHeight: 1.6 }}>Se você quiser, antes de dormir, uma prática rápida pra pousar o dia.</p>
+          <div style={{ display: 'flex', gap: 'var(--espaco-1)', flexWrap: 'wrap', marginTop: 'var(--espaco-2)' }}>
+            <button className="botao-suave" style={corEscuro} onClick={vamos}>vamos</button>
+            <button onClick={() => setFase('fora')} style={{ background: 'none', border: 'none', color: 'var(--sobre-escuro-suave)', fontStyle: 'italic', fontFamily: 'var(--fonte-titulo)', cursor: 'pointer' }}>agora não</button>
+          </div>
+        </>
+      )}
+
+      {fase === 'carregando' && (
+        <p style={{ color: 'var(--sobre-escuro-suave)', fontStyle: 'italic', fontFamily: 'var(--fonte-titulo)', margin: 0 }}>um instante…</p>
+      )}
+
+      {fase === 'conduzindo' && pratica && (
+        <div key={passo} className="val-fade-in">
+          <p style={{ color: 'var(--ambar)', fontSize: 'var(--corpo-pequeno)', fontFamily: 'var(--fonte-titulo)', fontStyle: 'italic', margin: 0 }}>{pratica.nome}</p>
+          <p style={{ fontSize: 'var(--titulo-sm)', lineHeight: 1.6, margin: 'var(--espaco-2) 0 0' }}>{pratica.passos[passo]}</p>
+          <button className="botao-suave" style={{ ...corEscuro, marginTop: 'var(--espaco-3)' }} onClick={seguir}>
+            {passo < pratica.passos.length - 1 ? 'estou aqui' : 'a âncora'}
+          </button>
+        </div>
+      )}
+
+      {fase === 'fim' && pratica && (
+        <div className="val-fade-in">
+          <p style={{ color: 'var(--sobre-escuro-suave)', fontSize: 'var(--corpo-pequeno)', margin: '0 0 var(--espaco-1)' }}>leve com você:</p>
+          <p style={{ fontFamily: 'var(--fonte-titulo)', fontStyle: 'italic', fontSize: 'var(--titulo-md)', lineHeight: 1.5, margin: 0 }}>{pratica.ancora}</p>
+          <div style={{ marginTop: 'var(--espaco-3)' }}>
+            {util ? (
+              <p style={{ color: 'var(--ambar)', fontFamily: 'var(--fonte-titulo)', fontStyle: 'italic', margin: 0 }}>que bom. boa noite.</p>
+            ) : (
+              <button className="botao-suave" style={corEscuro} onClick={() => { marcarPraticaUtil(pratica.id); setUtil(true); }}>isso me fez bem</button>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
 

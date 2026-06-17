@@ -127,6 +127,22 @@ export async function gerarFechoDia(respostas, soltar) {
 }
 
 /*
+ * Práticas de fechamento: gera uma prática NOVA pra renovar o banco (1 crédito).
+ * Falha em silêncio (devolve null) pra a UI cair de volta no banco curado, sem
+ * abrir tela de plano no meio do ritual de dormir. Ver functions/pratica.
+ */
+export async function gerarPratica(tom) {
+  if (!hasSupabase) return null;
+  try {
+    const { data, error } = await supabase.functions.invoke('pratica', { body: { tom } });
+    if (error || data?.erro) return null;
+    return data; // { id, nome, passos, ancora, gerada }
+  } catch {
+    return null;
+  }
+}
+
+/*
  * "O espelho" do Olhar pra dentro — devolutiva gerada das respostas dela à
  * jornada, com cache (regra 2). Ver supabase/functions/espelho.
  */
