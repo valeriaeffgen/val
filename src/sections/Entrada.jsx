@@ -258,7 +258,7 @@ function Rodape({ modo, trocarModo }) {
 
 function MensagemEnviado({ tipo, email, onVoltar }) {
   const copy = {
-    confirmar: { t: 'Confirma o seu e-mail.', p: `Te enviei um link pra ${email}. Toque nele pra confirmar que é você, e já entra.` },
+    confirmar: { t: 'Confira o seu e-mail.', p: `Se este e-mail ainda não tinha conta, te mandei um link pra ${email}, é só tocar pra confirmar e entrar. Se você já tinha conta, pode entrar direto, ou pedir uma senha nova em "esqueci minha senha".` },
     recuperar: { t: 'Te enviei um link.', p: `Abra o e-mail em ${email} e toque no link pra criar uma senha nova.` },
     magico: { t: 'Te enviei um link.', p: `Abra o e-mail em ${email} e toque no link pra entrar. Depois você cria a sua senha.` },
   }[tipo] ?? { t: 'Pronto.', p: 'Confira o seu e-mail.' };
