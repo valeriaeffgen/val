@@ -61,10 +61,19 @@ export default function Entrada() {
       } else if (modo === 'criar') {
         marcarConsentimento();
         const { data, error } = await cadastrarComSenha(mail, senha);
-        if (error) setErro(/registered|already/i.test(error.message ?? '')
-          ? 'Esse e-mail já tem conta. Tente entrar, ou redefina a senha.'
-          : 'Não consegui criar agora. Confere o e-mail e tenta de novo.');
-        else if (!data?.session) setEnviado('confirmar'); // confirmação ligada
+        // E-mail já cadastrado: o Supabase não dá erro (não revela existência),
+        // mas devolve o usuário com `identities` vazio. É como detectamos, pra
+        // não mostrar "confirme seu e-mail" sem nada ter sido enviado.
+        const jaExiste = data?.user && Array.isArray(data.user.identities) && data.user.identities.length === 0;
+        if (error) {
+          setErro(/registered|already/i.test(error.message ?? '')
+            ? 'Esse e-mail já tem conta. Tente entrar, ou redefina a senha.'
+            : 'Não consegui criar agora. Confere o e-mail e tenta de novo.');
+        } else if (jaExiste) {
+          setErro('Esse e-mail já tem conta. Toque em "já tenho conta, entrar", ou em "esqueci minha senha".');
+        } else if (!data?.session) {
+          setEnviado('confirmar'); // confirmação ligada
+        }
         // se já veio sessão (confirmação desligada), o App segue sozinho.
       } else if (modo === 'esqueci') {
         const { error } = await redefinirSenhaEmail(mail);
